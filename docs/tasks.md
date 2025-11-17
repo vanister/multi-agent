@@ -26,7 +26,7 @@ This list is based off of the [technical-design.md](./technical-design.md) file.
    1. [x] Install Ollama via Homebrew
    2. [x] Start Ollama service
    3. [x] Pull qwen2.5-coder:3b model
-   4. [ ] Add `tests/integration/ollama-connection.test.ts` to verify Ollama responds (skip if unreachable)
+   4. [x] Add `tests/integration/ollama-connection.test.ts` to verify Ollama responds (skip if unreachable)
 
 
 ## Phase 2: Core Services & Components
