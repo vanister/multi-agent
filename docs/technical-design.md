@@ -406,7 +406,7 @@ sequenceDiagram
     Agent->>Agent: buildContext(input, history, systemPrompt)
     
     loop Until done=true or error
-        Agent->>LLM: generate(messages)
+        Agent->>LLM: chat(messages)
         LLM->>Agent: Raw response
         Agent->>Parser: parseResponse(raw)
         Parser->>Parser: Strip markdown
@@ -454,7 +454,7 @@ sequenceDiagram
 ```typescript
 // src/llm/service.ts
 export interface LLMService {
-  generate(messages: Message[]): Promise<LLMResponse>
+  chat(messages: Message[]): Promise<LLMResult>
 }
 
 export class OllamaService implements LLMService {
@@ -463,9 +463,9 @@ export class OllamaService implements LLMService {
     private readonly model: string
   ) {}
 
-  async generate(messages: Message[]): Promise<LLMResponse> {
+  async chat(messages: Message[]): Promise<LLMResult> {
     // HTTP call to Ollama API
-    // Return structured response
+    // Return structured response or error result
   }
 }
 ```
