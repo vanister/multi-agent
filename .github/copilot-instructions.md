@@ -9,6 +9,7 @@
 - Guard clauses, early returns, avoid deep nesting
 - No return statements inline with `if`
 - Minimal necessary comments only
+- Don't document public APIs unless non-obvious
 - Simple, concise, single-purpose code
 - 100 char line limit, SOLID principles, test-minded
 
