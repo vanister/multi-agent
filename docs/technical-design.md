@@ -53,7 +53,7 @@ coding-agent/
 │   ├── llm/
 │   └── tools/
 │
-├── integration_tests/           # End-to-end workflows
+├── tests_integrations/           # End-to-end workflows
 │   └── agent-workflow.test.ts
 │
 ├── config.ts                    # Root configuration
@@ -726,7 +726,7 @@ async function main() {
 4. Implement ToolRegistry
 5. Create one tool (file_read)
 6. Implement agent loop (runAgent function)
-7. Manual testing with console output
+7. Add `tests/integration/agent-workflow.test.ts` for single-tool and multi-tool loops
 
 **Success Criteria:**
 
@@ -791,7 +791,7 @@ This is a learning project so deprioritize testing in favor of learning unless t
 
 ### Phase 1 Approach:
 
-- Manual testing with console.log
+- Baseline: integration tests via `vitest` for core flows; manual testing for exploration
 - Focus on understanding failure modes
 - Add tests after learning edge cases
 

@@ -26,7 +26,7 @@ This list is based off of the [technical-design.md](./technical-design.md) file.
    1. [x] Install Ollama via Homebrew
    2. [x] Start Ollama service
    3. [x] Pull qwen2.5-coder:3b model
-   4. [x] Test connection with simple script
+   4. [ ] Add `tests/integration/ollama-connection.test.ts` to verify Ollama responds (skip if unreachable)
 
 
 ## Phase 2: Core Services & Components
@@ -37,21 +37,21 @@ This list is based off of the [technical-design.md](./technical-design.md) file.
    2. [ ] Implement OllamaService class
    3. [ ] Handle HTTP communication with Ollama API
    4. [ ] Add error handling for network failures
-   5. [ ] Create simple test script to validate generation
+   5. [ ] Add `tests/integration/llm-service.test.ts` to call `OllamaService.generate` and assert non-empty content
 
 6. **Tool System** (`src/tools/`)
    1. [ ] Implement ToolRegistry class with register/execute/list methods
    2. [ ] Add Zod validation in execute method
    3. [ ] Create file_read tool with args schema
    4. [ ] Create file_write tool with args schema
-   5. [ ] Test tools in isolation with mock data
+   5. [ ] Add `tests/integration/tools-registry.test.ts` covering registry + `file_read`/`file_write` using a temp dir
 
 7. **Parser** (`src/agent/parser.ts`)
    1. [ ] Implement stripMarkdown function
    2. [ ] Create parseResponse function with Zod schemas
    3. [ ] Handle three cases: tool call, done signal, error
    4. [ ] Add comprehensive error messages
-   5. [ ] Test with various malformed inputs
+   5. [ ] Add `tests/integration/parser.test.ts` validating tool-call/done/error paths from raw LLM-like inputs
 
 8. **Context Builder** (`src/context/`)
    1. [ ] Create buildContext pure function
