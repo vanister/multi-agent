@@ -6,27 +6,27 @@ This list is based off of the [technical-design.md](./technical-design.md) file.
 *Goal: Establish project structure and core dependencies*
 
 1. **Initialize Project**
-   1. [x] Create project directory structure
-   2. [x] Initialize npm project with TypeScript
-   3. [x] Configure `tsconfig.json` with strict settings
-   4. [x] Setup `.gitignore` for Node/TypeScript
+   1. [ ] Create project directory structure
+   2. [ ] Initialize npm project with TypeScript
+   3. [ ] Configure `tsconfig.json` with strict settings
+   4. [ ] Setup `.gitignore` for Node/TypeScript
 
 2. **Install Dependencies**
-   1. [x] Core: `typescript`, `tsx` (for running TS directly)
-   3. [x] Validation: `zod`
-   4. [x] CLI: `commander` or `yargs`
-   5. [x] `tsx` watch mode
+   1. [ ] Core: `typescript`, `tsx` (for running TS directly)
+   3. [ ] Validation: `zod`
+   4. [ ] CLI: `commander` 
+   5. [ ] `tsx` watch mode
 
 3. **Create Type System**
-   1. [x] Define `src/shared/types.d.ts` with Message, LLMResponse
-   2. [x] Define `src/tools/types.d.ts` with Tool, ToolCall, ToolResult
-   3. [x] Define `src/agent/types.d.ts` with AgentServices
+   1. [ ] Define `src/shared/types.d.ts` with Message, LLMResponse
+   2. [ ] Define `src/tools/types.d.ts` with Tool, ToolCall, ToolResult
+   3. [ ] Define `src/agent/types.d.ts` with AgentServices
 
 4. **Setup Ollama**
-   1. [x] Install Ollama via Homebrew
-   2. [x] Start Ollama service
-   3. [x] Pull qwen2.5-coder:3b model
-   4. [x] Add `tests/integration/ollama-connection.test.ts` to verify Ollama responds (skip if unreachable)
+   1. [ ] Install Ollama via Homebrew
+   2. [ ] Start Ollama service
+   3. [ ] Pull qwen2.5-coder:3b model
+   4. [ ] Add `tests/integration/ollama-connection.test.ts` to verify Ollama responds (skip if unreachable)
 
 
 ## Phase 2: Core Services & Components
@@ -37,7 +37,7 @@ This list is based off of the [technical-design.md](./technical-design.md) file.
    2. [ ] Implement OllamaService class
    3. [ ] Handle HTTP communication with Ollama API
    4. [ ] Add error handling for network failures
-   5. [ ] Add `tests/integration/llm-service.test.ts` to call `OllamaService.generate` and assert non-empty content
+   5. [ ] Add `tests/integration/llm-service.test.ts` to call `OllamaService.chat` and assert non-empty content
 
 2. **Tool System** (`src/tools/`)
    1. [ ] Implement ToolRegistry class with register/execute/list methods
