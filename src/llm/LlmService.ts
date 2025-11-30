@@ -32,7 +32,6 @@ export class OllamaLlmService implements LlmService {
         throw new OllamaApiError(response.status, response.data);
       }
 
-      // only check for null/undefined, as content may be an empty string
       if (response.data?.message == null) {
         throw new LlmError("Invalid response from Ollama: missing message", response.data);
       }

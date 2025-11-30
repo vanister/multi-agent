@@ -38,24 +38,32 @@ This list is based off of the [technical-design.md](./technical-design.md) file.
    4. [x] Add error handling for network failures (LlmError, OllamaApiError)
    5. [x] Create HttpClient abstraction and FetchHttpClient implementation
    6. [x] Organize types in llm-types.d.ts and http-client-types.d.ts
+   7. [x] Refactor to be stateless (accepts Message[])
 
-2. **Tool System** (`src/tools/`)
+2. **Conversation Management** (`src/conversation/`)
+   1. [x] Define ConversationRepository interface with CRUD operations
+   2. [x] Implement InMemoryConversationRepository
+   3. [x] Create ConversationHistoryService interface
+   4. [x] Implement InMemoryConversationHistoryService
+   5. [x] Add specific error classes (ConversationNotFoundError, ConversationAlreadyExistsError)
+   6. [x] Organize types in conversation-types.d.ts
+   7. [x] Add token estimation function (chars/4 heuristic)
+
+3. **Tool System** (`src/tools/`)
    1. [ ] Implement ToolRegistry class with register/execute/list methods
    2. [ ] Add Zod validation in execute method
    3. [ ] Create file_read tool with args schema
    4. [ ] Create file_write tool with args schema
 
-3. **Parser** (`src/agent/parser.ts`)
+4. **Parser** (`src/agent/parser.ts`)
    1. [ ] Implement stripMarkdown function
    2. [ ] Create parseResponse function with Zod schemas
    3. [ ] Handle three cases: tool call, done signal, error
    4. [ ] Add comprehensive error messages
 
-4. **Context Builder** (`src/context/`)
+5. **Context Builder** (`src/context/`)
    1. [ ] Create buildContext pure function
    2. [ ] Design SYSTEM_PROMPT with JSON format instructions
-   3. [ ] Implement ConversationHistory class
-   4. [ ] Add token estimation function (chars/4 heuristic)
 
 
 ## Phase 3: Agent Loop Implementation
