@@ -11,3 +11,10 @@ export class ConversationAlreadyExistsError extends Error {
     this.name = "ConversationAlreadyExistsError";
   }
 }
+
+export class ConversationDataCorruptedError extends Error {
+  constructor(conversationId: string, details: string) {
+    super(`Conversation ${conversationId} data is corrupted: ${details}`);
+    this.name = "ConversationDataCorruptedError";
+  }
+}

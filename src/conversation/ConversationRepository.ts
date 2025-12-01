@@ -21,19 +21,15 @@ export class InMemoryConversationRepository implements ConversationRepository {
   }
 
   async add(id: string, message: Message): Promise<void> {
-    const conversation = this.conversations.get(id);
-
-    if (conversation) {
-      conversation.messages.push(message);
-    }
+    const conversation = this.conversations.get(id)!;
+    conversation.messages.push(message);
+    conversation.updatedAt = new Date();
   }
 
   async update(id: string, messages: Message[]): Promise<void> {
-    const conversation = this.conversations.get(id);
-
-    if (conversation) {
-      conversation.messages = messages;
-    }
+    const conversation = this.conversations.get(id)!;
+    conversation.messages = messages;
+    conversation.updatedAt = new Date();
   }
 
   async delete(id: string): Promise<void> {

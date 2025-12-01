@@ -1,16 +1,12 @@
-export type MessageRole = "system" | "user" | "assistant";
+import type { z } from "zod";
+import type {
+  MessageRoleSchema,
+  MessageSchema,
+  LlmResultSchema,
+  OllamaChatResponseSchema
+} from "./schemas.js";
 
-export type Message = {
-  role: MessageRole;
-  content: string;
-};
-
-export type LlmResult = {
-  content: string;
-};
-
-export type OllamaChatResponse = {
-  message: {
-    content: string;
-  };
-};
+export type MessageRole = z.infer<typeof MessageRoleSchema>;
+export type Message = z.infer<typeof MessageSchema>;
+export type LlmResult = z.infer<typeof LlmResultSchema>;
+export type OllamaChatResponse = z.infer<typeof OllamaChatResponseSchema>;

@@ -1,6 +1,6 @@
 import type { Message, LlmResult, OllamaChatResponse } from "./llm-types.js";
 import type { HttpClient } from "../utilities/HttpClient.js";
-import { LlmError, OllamaApiError } from "./LlmError.js";
+import { LlmError, OllamaApiError } from "./LlmErrors.js";
 
 export interface LlmService {
   chat(messages: Message[]): Promise<LlmResult>;

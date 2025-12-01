@@ -1,8 +1,4 @@
-import type { Message } from "../llm/llm-types.js";
+import type { z } from "zod";
+import type { ConversationSchema } from "./schemas.js";
 
-export type Conversation = {
-  id: string;
-  messages: Message[];
-  createdAt: Date;
-  updatedAt: Date;
-};
+export type Conversation = z.infer<typeof ConversationSchema>;

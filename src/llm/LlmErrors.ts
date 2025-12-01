@@ -11,6 +11,7 @@ export class OllamaApiError extends LlmError {
     public readonly responseData: unknown,
     message?: string
   ) {
+    // todo - should probably probably ensure responseData is stringifiable
     super(message || `Ollama API error (${status}): ${JSON.stringify(responseData)}`, responseData);
     this.name = "OllamaApiError";
   }
