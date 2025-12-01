@@ -65,6 +65,10 @@ This list is based off of the [technical-design.md](./technical-design.md) file.
    1. [ ] Create buildContext pure function
    2. [ ] Design SYSTEM_PROMPT with JSON format instructions
 
+6. **Integration Testing**
+   1. [ ] Test integration with Ollama through `LlmService`
+   2. [ ] Complete integration with all services and components
+
 
 ## Phase 3: Agent Loop Implementation
 *Goal: Create the core agent orchestration logic*

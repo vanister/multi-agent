@@ -8,6 +8,7 @@ import {
 } from "./ConversationErrors.js";
 import { ConversationSchema } from "./schemas.js";
 import { MessageSchema } from "../llm/schemas.js";
+import { DateUtility } from "../utilities/DateUtility.js";
 
 export interface ConversationService {
   create(): Promise<void>;
@@ -18,6 +19,8 @@ export interface ConversationService {
 }
 
 export class InMemoryConversationService implements ConversationService {
+  static readonly CHARS_PER_TOKEN = 4;
+
   constructor(
     private readonly conversationId: string,
     private readonly repository: ConversationRepository
@@ -31,7 +34,7 @@ export class InMemoryConversationService implements ConversationService {
       throw new ConversationAlreadyExistsError(this.conversationId);
     }
 
-    const now = new Date();
+    const now = DateUtility.now();
     const conversation = {
       id: this.conversationId,
       messages: [],
@@ -83,7 +86,7 @@ export class InMemoryConversationService implements ConversationService {
 
     // Heuristic: ~4 chars per token is a common approximation for English text
     // This is intentionally simple for MVP; can be refined with actual tokenizer later
-    return Math.ceil(totalChars / 4);
+    return Math.ceil(totalChars / InMemoryConversationService.CHARS_PER_TOKEN);
   }
 
   private validateConversation(conversation: Conversation): Conversation {
@@ -92,7 +95,7 @@ export class InMemoryConversationService implements ConversationService {
     } catch (error) {
       throw new ConversationDataCorruptedError(
         this.conversationId,
-        error instanceof Error ? error.message : "Unknown validation error"
+        (error as Error)?.message || "Unknown validation error"
       );
     }
   }
