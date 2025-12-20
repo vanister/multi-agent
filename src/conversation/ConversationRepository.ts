@@ -1,6 +1,6 @@
 import type { Message } from "../llm/llm-types.js";
 import type { Conversation } from "./conversation-types.js";
-import { DateUtility } from "../utilities/DateUtility.js";
+import { DateUtility } from "../utilities/dateUtilities.js";
 
 export interface ConversationRepository {
   create(id: string, conversation: Conversation): Promise<void>;

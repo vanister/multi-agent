@@ -8,7 +8,7 @@ import {
 } from "./ConversationErrors.js";
 import { ConversationSchema } from "./schemas.js";
 import { MessageSchema } from "../llm/schemas.js";
-import { DateUtility } from "../utilities/DateUtility.js";
+import { DateUtility } from "../utilities/dateUtilities.js";
 
 export interface ConversationService {
   create(): Promise<void>;

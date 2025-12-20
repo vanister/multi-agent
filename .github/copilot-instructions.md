@@ -35,6 +35,8 @@ See [tasks.md](../docs/tasks.md) for complete implementation checklist.
 - Single-purpose components, logic in helpers/hooks not JSX
 - CSS Modules preferred
 - No `index.ts` barrels
+- Classes should use `TitleCase` names
+- Utility/helpers/functional files use `camelCase` names
 
 ## Testing Strategy
 

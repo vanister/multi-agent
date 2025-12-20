@@ -10,3 +10,7 @@ export const ToolResultSchema = z.object({
   data: z.unknown().optional(),
   error: z.string().optional()
 });
+
+export const FileReadArgsSchema = z.object({
+  path: z.string().min(1, "Path cannot be empty")
+});
