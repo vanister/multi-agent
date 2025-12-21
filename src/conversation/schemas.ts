@@ -7,3 +7,5 @@ export const conversationSchema = z.object({
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date()
 });
+
+export type Conversation = z.infer<typeof conversationSchema>;

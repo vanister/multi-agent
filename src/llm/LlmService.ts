@@ -1,4 +1,4 @@
-import type { Message, LlmResult, OllamaChatResponse } from "./llm-types.js";
+import type { Message, LlmResult, OllamaChatResponse } from "./schemas.js";
 import type { HttpClient } from "../utilities/HttpClient.js";
 import { LlmError, OllamaApiError } from "./LlmErrors.js";
 

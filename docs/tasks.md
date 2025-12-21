@@ -1,6 +1,6 @@
 # Complete Task List for Coding Agent MVP
 
-This list is based off of the [technical-design.md](./technical-design.md) file.
+See the [quick-reference](./quick-reference.md) for design decisions.
 
 ## Phase 1: Project Setup & Foundation
 *Goal: Establish project structure and core dependencies*
@@ -57,7 +57,7 @@ This list is based off of the [technical-design.md](./technical-design.md) file.
 
 4. **Parser** (`src/agent/parser.ts`)
    1. [x] Implement `stripMarkdown` function
-   2. [ ] Create `parseResponse` function with Zod schemas
+   2. [x] Create `parseResponse` function with Zod schemas
    3. [ ] Handle three cases: tool call, done signal, error
    4. [ ] Add comprehensive error messages
 

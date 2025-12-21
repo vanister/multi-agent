@@ -2,14 +2,13 @@ import { promises as fs } from "fs";
 import z from "zod";
 import { MAX_FILE_SIZE_BYTES, SANDBOX_DIR } from "../config.js";
 import { FileSystemManager } from "../utilities/FileSystemManager.js";
-import { fileReadArgsSchema } from "./schemas.js";
-import type { Tool, ToolResult } from "./tool-types.js";
+import { fileReadArgsSchema, type FileReadArgs } from "./schemas.js";
+import type { Tool } from "./tool-types.js";
+import type { ToolResult } from "./schemas.js";
 import { FileSizeError } from "./ToolErrors.js";
 
 const fsManager = new FileSystemManager(SANDBOX_DIR);
 await fsManager.verifySandboxExists();
-
-export type FileReadArgs = z.infer<typeof fileReadArgsSchema>;
 
 export const fileReadTool: Tool<FileReadArgs> = {
   name: "file_read",

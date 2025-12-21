@@ -1,4 +1,5 @@
-import type { Tool, ToolCall, ToolResult, ToolMetadata } from "./tool-types.js";
+import type { Tool, ToolMetadata } from "./tool-types.js";
+import type { ToolCall, ToolResult } from "./schemas.js";
 import { ToolAlreadyRegisteredError } from "./ToolErrors.js";
 import { z } from "zod";
 

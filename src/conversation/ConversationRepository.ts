@@ -1,5 +1,5 @@
-import type { Message } from "../llm/llm-types.js";
-import type { Conversation } from "./conversation-types.js";
+import type { Message } from "../llm/schemas.js";
+import type { Conversation } from "./schemas.js";
 import { now } from "../utilities/dateUtilities.js";
 
 export interface ConversationRepository {

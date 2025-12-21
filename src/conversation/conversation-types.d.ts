@@ -1,4 +1,2 @@
-import type { z } from "zod";
-import type { conversationSchema } from "./schemas.js";
-
-export type Conversation = z.infer<typeof conversationSchema>;
+// This file intentionally left empty.
+// Zod-inferred types are now exported directly from schemas.ts
