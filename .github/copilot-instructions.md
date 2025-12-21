@@ -37,6 +37,7 @@ See [tasks.md](../docs/tasks.md) for complete implementation checklist.
 - No `index.ts` barrels
 - Classes should use `TitleCase` names
 - Utility/helpers/functional files use `camelCase` names
+- Class member order: private vars, public vars, ctors, getter/setters, public funcs, private funcs
 
 ## Testing Strategy
 

@@ -1,15 +1,12 @@
 import { promises as fs } from "fs";
-import { resolvePath, isWithinBoundary } from "./pathUtilities.js";
+import path from "path";
+import { isWithinBoundary } from "./pathUtilities.js";
 import { SandboxNotFoundError, PathValidationError } from "../tools/ToolErrors.js";
 import { hasErrorCode } from "./errorUtilities.js";
 
 export class FileSystemManager {
   constructor(private readonly sandboxDir: string) {}
 
-  /**
-   * Verifies that the sandbox directory exists and is a directory.
-   * @throws {SandboxNotFoundError} if not found or not a directory.
-   */
   async verifySandboxExists(): Promise<void> {
     try {
       const stats = await fs.stat(this.sandboxDir);
@@ -27,10 +24,10 @@ export class FileSystemManager {
   }
 
   async validateSandboxPath(requestedPath: string): Promise<string> {
-    const absoluteSandbox = resolvePath(process.cwd(), this.sandboxDir);
+    const absoluteSandbox = this.resolvePath(process.cwd(), this.sandboxDir);
 
     try {
-      const candidatePath = resolvePath(absoluteSandbox, requestedPath);
+      const candidatePath = this.resolvePath(absoluteSandbox, requestedPath);
       const resolvedPath = await fs.realpath(candidatePath);
 
       if (!isWithinBoundary(resolvedPath, absoluteSandbox)) {
@@ -51,5 +48,9 @@ export class FileSystemManager {
 
       throw error;
     }
+  }
+
+  private resolvePath(basePath: string, requestedPath: string): string {
+    return path.resolve(basePath, requestedPath);
   }
 }
