@@ -58,20 +58,6 @@ src/
 └── shared/       # types.d.ts, utils.ts
 ```
 
-## Current Phase: Phase 2 - Core Services
-
-**Completed:**
-- ✅ Project setup, dependencies
-- ✅ Ollama installed
-
-**In Progress:**
-- [ ] LLMService interface + OllamaService implementation
-- [ ] ToolRegistry with Zod validation
-- [ ] Parser (stripMarkdown, parseResponse)
-- [ ] file_read/file_write tools
-- [ ] ConversationHistory
-- [ ] buildContext function + SYSTEM_PROMPT
-
 **Next:**
 - Phase 3: Agent loop (runAgent, error recovery, completion)
 - Phase 4: CLI interface

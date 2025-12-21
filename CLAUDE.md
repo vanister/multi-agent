@@ -7,7 +7,7 @@
 - Context management, prompt engineering for small models (qwen2.5-coder:3b)
 - **Current phase:** Phase 2 - Core Services (LLM ✅, Conversation ✅, Tools/Parser/Context pending)
 
-See `docs/quick-reference.md` for types, `docs/tasks.md` for checklist, `docs/technical-design.md` for details.
+See `docs/quick-reference.md` for types and `docs/tasks.md` for checklist.
 
 ## Architecture Rules
 

@@ -12,8 +12,6 @@ This is a **learning project** building a coding agent MVP to understand:
 See [quick-reference.md](../docs/quick-reference.md) for architecture, types, and current phase.
 See [tasks.md](../docs/tasks.md) for complete implementation checklist.
 
-ONLY use the [technical-design.md](../docs/technical-design.md) when explicitely instructed.
-
 ## Code Preferences
 
 **Always ask before providing code samples**
