@@ -60,7 +60,7 @@ _Goal: Build the foundational services that the agent will use_
    1. [x] Implement `stripMarkdown` function
    2. [x] Create `parseResponse` function with Zod schemas
    3. [x] Handle three cases: tool call, done signal, error
-   4. [ ] Add comprehensive error messages
+   4. [x] Add comprehensive error messages
 
 5. **Context Builder** (`src/context/`)
    1. [ ] Create buildContext pure function
