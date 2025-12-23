@@ -58,7 +58,7 @@ See the [quick-reference](./quick-reference.md) for design decisions.
 4. **Parser** (`src/agent/parser.ts`)
    1. [x] Implement `stripMarkdown` function
    2. [x] Create `parseResponse` function with Zod schemas
-   3. [ ] Handle three cases: tool call, done signal, error
+   3. [x] Handle three cases: tool call, done signal, error
    4. [ ] Add comprehensive error messages
 
 5. **Context Builder** (`src/context/`)

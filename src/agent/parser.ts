@@ -1,9 +1,11 @@
+import type { ZodError } from "zod";
 import {
   toolCallResponseSchema,
   completionResponseSchema,
   type ParsedResponse
 } from "./schemas.js";
 import { JsonParseError, ResponseValidationError } from "./ParserErrors.js";
+import { buildJsonParseErrorMessage, buildValidationErrorMessage } from "./parserHelpers.js";
 
 /**
  * Removes markdown code fences from LLM responses.
@@ -46,7 +48,9 @@ export function parseResponse(rawResponse: string): ParsedResponse {
   try {
     parsed = JSON.parse(stripped);
   } catch (error) {
-    throw new JsonParseError(stripped, error as Error);
+    const parseError = error as Error;
+    const message = buildJsonParseErrorMessage(stripped, parseError);
+    throw new JsonParseError(message, stripped, parseError);
   }
 
   // Try completion schema first
@@ -61,7 +65,10 @@ export function parseResponse(rawResponse: string): ParsedResponse {
     return toolCallResult.data;
   }
 
-  // Neither schema matched - throw validation error
-  // Use the tool call error as it's more informative for debugging
-  throw new ResponseValidationError(stripped, toolCallResult.error);
+  // Neither schema matched - throw validation error with parsed object for better debugging
+  const receivedShape =
+    typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : undefined;
+
+  const message = buildValidationErrorMessage(toolCallResult.error, receivedShape);
+  throw new ResponseValidationError(message, stripped, toolCallResult.error);
 }
