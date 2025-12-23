@@ -1,11 +1,11 @@
-import type { ZodError } from "zod";
+import type { ZodError } from 'zod';
 import {
   toolCallResponseSchema,
   completionResponseSchema,
   type ParsedResponse
-} from "./schemas.js";
-import { JsonParseError, ResponseValidationError } from "./ParserErrors.js";
-import { buildJsonParseErrorMessage, buildValidationErrorMessage } from "./parserHelpers.js";
+} from './schemas.js';
+import { JsonParseError, ResponseValidationError } from './ParserErrors.js';
+import { buildJsonParseErrorMessage, buildValidationErrorMessage } from './parserHelpers.js';
 
 /**
  * Removes markdown code fences from LLM responses.
@@ -19,12 +19,12 @@ import { buildJsonParseErrorMessage, buildValidationErrorMessage } from "./parse
  */
 export function stripMarkdown(text: string): string {
   if (!text) {
-    return "";
+    return '';
   }
 
   return text
-    .replace(/```json\n?/g, "")
-    .replace(/```\n?/g, "")
+    .replace(/```json\n?/g, '')
+    .replace(/```\n?/g, '')
     .trim();
 }
 
@@ -67,7 +67,7 @@ export function parseResponse(rawResponse: string): ParsedResponse {
 
   // Neither schema matched - throw validation error with parsed object for better debugging
   const receivedShape =
-    typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : undefined;
+    typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : undefined;
 
   const message = buildValidationErrorMessage(toolCallResult.error, receivedShape);
   throw new ResponseValidationError(message, stripped, toolCallResult.error);

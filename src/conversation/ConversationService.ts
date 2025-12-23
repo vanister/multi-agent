@@ -1,14 +1,14 @@
-import type { Message } from "../llm/schemas.js";
-import type { Conversation } from "./schemas.js";
-import type { ConversationRepository } from "./ConversationRepository.js";
+import type { Message } from '../llm/schemas.js';
+import type { Conversation } from './schemas.js';
+import type { ConversationRepository } from './ConversationRepository.js';
 import {
   ConversationAlreadyExistsError,
   ConversationNotFoundError,
   ConversationDataCorruptedError
-} from "./ConversationErrors.js";
-import { conversationSchema } from "./schemas.js";
-import { messageSchema } from "../llm/schemas.js";
-import { now } from "../utilities/dateUtilities.js";
+} from './ConversationErrors.js';
+import { conversationSchema } from './schemas.js';
+import { messageSchema } from '../llm/schemas.js';
+import { now } from '../utilities/dateUtilities.js';
 
 export interface ConversationService {
   create(): Promise<void>;
@@ -95,7 +95,7 @@ export class InMemoryConversationService implements ConversationService {
     } catch (error) {
       throw new ConversationDataCorruptedError(
         this.conversationId,
-        (error as Error)?.message || "Unknown validation error"
+        (error as Error)?.message || 'Unknown validation error'
       );
     }
   }

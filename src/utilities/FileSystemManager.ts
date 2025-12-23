@@ -1,8 +1,8 @@
-import { promises as fs } from "fs";
-import path from "path";
-import { isWithinBoundary } from "./pathUtilities.js";
-import { SandboxNotFoundError, PathValidationError } from "../tools/ToolErrors.js";
-import { hasErrorCode } from "./errorUtilities.js";
+import { promises as fs } from 'fs';
+import path from 'path';
+import { isWithinBoundary } from './pathUtilities.js';
+import { SandboxNotFoundError, PathValidationError } from '../tools/ToolErrors.js';
+import { hasErrorCode } from './errorUtilities.js';
 
 export class FileSystemManager {
   constructor(private readonly sandboxDir: string) {}
@@ -12,10 +12,10 @@ export class FileSystemManager {
       const stats = await fs.stat(this.sandboxDir);
 
       if (!stats.isDirectory()) {
-        throw new PathValidationError(this.sandboxDir, "Not a directory");
+        throw new PathValidationError(this.sandboxDir, 'Not a directory');
       }
     } catch (error) {
-      if (hasErrorCode(error) && error.code === "ENOENT") {
+      if (hasErrorCode(error) && error.code === 'ENOENT') {
         throw new SandboxNotFoundError(this.sandboxDir);
       }
 
@@ -31,18 +31,18 @@ export class FileSystemManager {
       const resolvedPath = await fs.realpath(candidatePath);
 
       if (!isWithinBoundary(resolvedPath, absoluteSandbox)) {
-        throw new PathValidationError(requestedPath, "Path escapes sandbox");
+        throw new PathValidationError(requestedPath, 'Path escapes sandbox');
       }
 
       return resolvedPath;
     } catch (error) {
       if (hasErrorCode(error)) {
-        if (error.code === "ENOENT") {
+        if (error.code === 'ENOENT') {
           throw new PathValidationError(requestedPath, `File not found`);
         }
 
-        if (error.code === "EACCES") {
-          throw new PathValidationError(requestedPath, "Permission denied");
+        if (error.code === 'EACCES') {
+          throw new PathValidationError(requestedPath, 'Permission denied');
         }
       }
 

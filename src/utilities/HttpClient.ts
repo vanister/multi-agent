@@ -1,4 +1,4 @@
-import type { HttpResponse, HttpClientOptions } from "./http-client-types.js";
+import type { HttpResponse, HttpClientOptions } from './http-client-types.js';
 
 export interface HttpClient {
   post<T = unknown>(
@@ -21,22 +21,22 @@ export class FetchHttpClient implements HttpClient {
       : undefined;
 
     const signal = options?.signal || controller.signal;
-    const responseType = options?.responseType || "json";
+    const responseType = options?.responseType || 'json';
     const headers = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...options?.headers
     };
 
     try {
       const response = await fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers,
         body: JSON.stringify(body),
         signal
       });
 
       const text = await response.text();
-      const data = responseType === "json" ? JSON.parse(text) : text;
+      const data = responseType === 'json' ? JSON.parse(text) : text;
 
       return {
         ok: response.ok,
@@ -44,7 +44,7 @@ export class FetchHttpClient implements HttpClient {
         data
       };
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new Error(`Request timeout after ${options?.timeoutMs}ms`);
       }
 

@@ -7,6 +7,6 @@ export type HttpResponse<T = unknown> = {
 export type HttpClientOptions = {
   timeoutMs?: number;
   signal?: AbortSignal;
-  responseType?: "json" | "text";
+  responseType?: 'json' | 'text';
   headers?: Record<string, string>;
 };

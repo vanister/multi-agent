@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { messageSchema } from "../llm/schemas.js";
+import { z } from 'zod';
+import { messageSchema } from '../llm/schemas.js';
 
 export const conversationSchema = z.object({
   id: z.string(),

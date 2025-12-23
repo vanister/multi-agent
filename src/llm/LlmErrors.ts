@@ -1,7 +1,10 @@
 export class LlmError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown
+  ) {
     super(message);
-    this.name = "LlmError";
+    this.name = 'LlmError';
   }
 }
 
@@ -13,6 +16,6 @@ export class OllamaApiError extends LlmError {
   ) {
     // todo - should probably probably ensure responseData is stringifiable
     super(message || `Ollama API error (${status}): ${JSON.stringify(responseData)}`, responseData);
-    this.name = "OllamaApiError";
+    this.name = 'OllamaApiError';
   }
 }

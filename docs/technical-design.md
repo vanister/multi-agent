@@ -22,7 +22,7 @@ coding-agent/
 │   │   └── types.d.ts           # Agent-specific types
 │   │
 │   ├── llm/
-│   │   ├── service.ts           # LLMService interface 
+│   │   ├── service.ts           # LLMService interface
 │   │   └── types.d.ts           # Message, LLMResponse types
 │   │
 │   ├── tools/
@@ -85,57 +85,57 @@ interface ConversationHistory { ... }
 ```typescript
 // src/shared/types.d.ts
 type Message = {
-  role: 'system' | 'user' | 'assistant'
-  content: string
-}
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+};
 
 type LLMResponse = {
-  content: string
-  raw: string  // Original response for debugging
-}
+  content: string;
+  raw: string; // Original response for debugging
+};
 
 // src/tools/types.d.ts
 type Tool<TArgs = Record<string, unknown>> = {
-  name: string
-  description: string
-  parameters: Record<string, unknown>  // Human-readable for LLM
-  argsSchema: z.ZodSchema<TArgs>       // Machine validation with Zod
-  execute: (args: TArgs) => Promise<ToolResult>
-}
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>; // Human-readable for LLM
+  argsSchema: z.ZodSchema<TArgs>; // Machine validation with Zod
+  execute: (args: TArgs) => Promise<ToolResult>;
+};
 
 type ToolCall = {
-  name: string
-  args: Record<string, unknown>  // Required, can be empty {}
-}
+  name: string;
+  args: Record<string, unknown>; // Required, can be empty {}
+};
 
 type ToolResult = {
-  success: boolean
-  data?: unknown
-  error?: string
-}
+  success: boolean;
+  data?: unknown;
+  error?: string;
+};
 
 // src/agent/types.d.ts
 type AgentServices = {
-  llm: LLMService
-  tools: IToolRegistry
-  context: ContextBuilder
-}
+  llm: LLMService;
+  tools: IToolRegistry;
+  context: ContextBuilder;
+};
 
 type ContextBuilder = {
-  buildInitial: (input: string) => Message[]
-}
+  buildInitial: (input: string) => Message[];
+};
 
 // Learning additions (optional but helpful)
 type AgentResult = {
-  response: string
-  success: boolean
+  response: string;
+  success: boolean;
   metrics?: {
-    iterations: number
-    toolCalls: number
-    parseErrors: number
-    tokensUsed?: number
-  }
-}
+    iterations: number;
+    toolCalls: number;
+    parseErrors: number;
+    tokensUsed?: number;
+  };
+};
 ```
 
 ---
@@ -212,15 +212,15 @@ messages.push({
   
   Use JSON format: { "tool": "tool_name", "args": {...} }
   Or complete with: { "done": true, "response": "..." }`
-})
+});
 
 // On tool execution error:
 messages.push({
-  role: 'system', 
+  role: 'system',
   content: `Tool execution failed: ${error}
   
   Please try a different approach.`
-})
+});
 ```
 
 **Rationale:**
@@ -237,19 +237,19 @@ messages.push({
 
 ```typescript
 type ContextState = {
-  messages: Message[]
-  totalTokens: number      // Approximate count
-  maxTokens: number        // Model's context window
-}
+  messages: Message[];
+  totalTokens: number; // Approximate count
+  maxTokens: number; // Model's context window
+};
 
 // Simple heuristic: ~4 chars per token
 function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4)
+  return Math.ceil(text.length / 4);
 }
 
 // Hard stop at 80% capacity
 if (totalTokens > maxTokens * 0.8) {
-  return "Context limit reached. Start new conversation."
+  return 'Context limit reached. Start new conversation.';
 }
 ```
 
@@ -315,7 +315,7 @@ if (totalTokens > maxTokens * 0.8) {
 
 **Two-Layer Approach:**
 
-```typescript
+````typescript
 // Layer 1: System prompt instruction
 const SYSTEM_PROMPT = `
 IMPORTANT: Output raw JSON only. Do not wrap in markdown code blocks.
@@ -327,13 +327,16 @@ Incorrect:
 \`\`\`json
 { "tool": "file_read", "args": { "path": "..." } }
 \`\`\`
-`
+`;
 
 // Layer 2: Parser strips markdown anyway
 function stripMarkdown(text: string): string {
-  return text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+  return text
+    .replace(/```json\n?/g, '')
+    .replace(/```\n?/g, '')
+    .trim();
 }
-```
+````
 
 **Rationale:**
 
@@ -349,17 +352,17 @@ function stripMarkdown(text: string): string {
 
 ```typescript
 type Tool<TArgs = Record<string, unknown>> = {
-  name: string
-  description: string
-  parameters: Record<string, unknown>
-  argsSchema: z.ZodSchema<TArgs>
-  execute: (args: TArgs) => Promise<ToolResult>
-}
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+  argsSchema: z.ZodSchema<TArgs>;
+  execute: (args: TArgs) => Promise<ToolResult>;
+};
 
 type ToolCall = {
-  name: string
-  args: Record<string, unknown>  // Required, can be empty {}
-}
+  name: string;
+  args: Record<string, unknown>; // Required, can be empty {}
+};
 ```
 
 **Example:**
@@ -367,7 +370,7 @@ type ToolCall = {
 ```typescript
 const fileReadArgsSchema = z.object({
   path: z.string()
-})
+});
 
 const fileReadTool: Tool<z.infer<typeof fileReadArgsSchema>> = {
   name: 'file_read',
@@ -376,10 +379,10 @@ const fileReadTool: Tool<z.infer<typeof fileReadArgsSchema>> = {
   argsSchema: fileReadArgsSchema,
   execute: async (args) => {
     // args is guaranteed to be { path: string }
-    const { path } = args
+    const { path } = args;
     // read file...
   }
-}
+};
 ```
 
 **Rationale:**
@@ -404,14 +407,14 @@ sequenceDiagram
 
     User->>Agent: "Read src/index.ts"
     Agent->>Agent: buildContext(input, history, systemPrompt)
-    
+
     loop Until done=true or error
         Agent->>LLM: chat(messages)
         LLM->>Agent: Raw response
         Agent->>Parser: parseResponse(raw)
         Parser->>Parser: Strip markdown
         Parser->>Parser: Parse JSON with Zod
-        
+
         alt Valid tool call
             Parser->>Agent: ToolCall object
             Agent->>Tools: execute(toolCall)
@@ -454,7 +457,7 @@ sequenceDiagram
 ```typescript
 // src/llm/service.ts
 export interface LLMService {
-  chat(messages: Message[]): Promise<LLMResult>
+  chat(messages: Message[]): Promise<LLMResult>;
 }
 
 export class OllamaService implements LLMService {
@@ -473,37 +476,37 @@ export class OllamaService implements LLMService {
 ```typescript
 // src/tools/registry.ts
 export interface IToolRegistry {
-  register(tool: Tool): void
-  execute(toolCall: ToolCall): Promise<ToolResult>
-  list(): Tool[]
+  register(tool: Tool): void;
+  execute(toolCall: ToolCall): Promise<ToolResult>;
+  list(): Tool[];
 }
 
 export class ToolRegistry implements IToolRegistry {
-  private tools: Map<string, Tool> = new Map()
+  private tools: Map<string, Tool> = new Map();
 
   register(tool: Tool): void {
     // Add tool to registry
   }
 
   async execute(toolCall: ToolCall): Promise<ToolResult> {
-    const tool = this.tools.get(toolCall.name)
-    
+    const tool = this.tools.get(toolCall.name);
+
     if (!tool) {
-      return { success: false, error: `Tool not found: ${toolCall.name}` }
+      return { success: false, error: `Tool not found: ${toolCall.name}` };
     }
-    
+
     // Validate args with Zod
-    const parsed = tool.argsSchema.safeParse(toolCall.args)
-    
+    const parsed = tool.argsSchema.safeParse(toolCall.args);
+
     if (!parsed.success) {
-      return { 
-        success: false, 
-        error: `Invalid args: ${parsed.error.message}` 
-      }
+      return {
+        success: false,
+        error: `Invalid args: ${parsed.error.message}`
+      };
     }
-    
+
     // Execute with validated args
-    return await tool.execute(parsed.data)
+    return await tool.execute(parsed.data);
   }
 
   list(): Tool[] {
@@ -515,19 +518,19 @@ export class ToolRegistry implements IToolRegistry {
 ```typescript
 // src/context/history.ts
 export interface IConversationHistory {
-  add(message: Message): void
-  getAll(): Message[]
-  getRecent(count: number): Message[]
-  clear(): void
+  add(message: Message): void;
+  getAll(): Message[];
+  getRecent(count: number): Message[];
+  clear(): void;
 }
 
 export class ConversationHistory implements IConversationHistory {
-  private messages: Message[] = []
+  private messages: Message[] = [];
 
-  add(message: Message): void { }
-  getAll(): Message[] { }
-  getRecent(count: number): Message[] { }
-  clear(): void { }
+  add(message: Message): void {}
+  getAll(): Message[] {}
+  getRecent(count: number): Message[] {}
+  clear(): void {}
 }
 ```
 
@@ -539,7 +542,7 @@ export class ConversationHistory implements IConversationHistory {
 // src/tools/file-ops.ts
 const fileReadArgsSchema = z.object({
   path: z.string()
-})
+});
 
 export const fileReadTool: Tool<z.infer<typeof fileReadArgsSchema>> = {
   name: 'file_read',
@@ -554,12 +557,12 @@ export const fileReadTool: Tool<z.infer<typeof fileReadArgsSchema>> = {
     // Read file
     // Return ToolResult
   }
-}
+};
 
 const fileWriteArgsSchema = z.object({
   path: z.string(),
   content: z.string()
-})
+});
 
 export const fileWriteTool: Tool<z.infer<typeof fileWriteArgsSchema>> = {
   name: 'file_write',
@@ -575,7 +578,7 @@ export const fileWriteTool: Tool<z.infer<typeof fileWriteArgsSchema>> = {
     // Write file
     // Return ToolResult
   }
-}
+};
 ```
 
 **Rationale:**
@@ -650,7 +653,7 @@ IMPORTANT:
 - Do not wrap JSON in markdown code blocks
 - Check tool_result.success before proceeding
 - Use multiple tool calls if needed before responding with "done"
-`
+`;
 ```
 
 ---
@@ -662,39 +665,35 @@ IMPORTANT:
 
 async function main() {
   // Initialize services
-  const llm = new OllamaService(
-    'http://localhost:11434',
-    'qwen2.5-coder:3b'
-  )
-  
-  const tools = new ToolRegistry()
-  tools.register(fileReadTool)
-  tools.register(fileWriteTool)
-  
-  const history = new ConversationHistory()
-  
+  const llm = new OllamaService('http://localhost:11434', 'qwen2.5-coder:3b');
+
+  const tools = new ToolRegistry();
+  tools.register(fileReadTool);
+  tools.register(fileWriteTool);
+
+  const history = new ConversationHistory();
+
   // Create context builder
   const contextBuilder = {
-    buildInitial: (input: string) => 
-      buildContext(input, history.getAll(), SYSTEM_PROMPT)
-  }
-  
+    buildInitial: (input: string) => buildContext(input, history.getAll(), SYSTEM_PROMPT)
+  };
+
   // Assemble services
   const services: AgentServices = {
     llm,
     tools,
     context: contextBuilder
-  }
-  
+  };
+
   // Run agent
-  const userInput = "Read src/index.ts and summarize it"
-  const result = await runAgent(userInput, services)
-  
-  console.log(result)
-  
+  const userInput = 'Read src/index.ts and summarize it';
+  const result = await runAgent(userInput, services);
+
+  console.log(result);
+
   // Learning addition: Log metrics if available
   if (result.metrics) {
-    console.log('Metrics:', result.metrics)
+    console.log('Metrics:', result.metrics);
   }
 }
 ```
@@ -817,33 +816,32 @@ integration_tests/
 ## Open Questions for Implementation
 
 1. **Token Counting:**
-    
-    - Use simple heuristic (chars / 4)?
-    - Use tokenizer library?
-    - Query Ollama API for token count?
-    - **Learning:** Track actual vs estimated to calibrate
+   - Use simple heuristic (chars / 4)?
+   - Use tokenizer library?
+   - Query Ollama API for token count?
+   - **Learning:** Track actual vs estimated to calibrate
+
 2. **Max Iterations:**
-    
-    - What's a reasonable limit? (10? 20?)
-    - Should it be configurable?
-    - **Learning:** Start with 10, see what tasks need more
+   - What's a reasonable limit? (10? 20?)
+   - Should it be configurable?
+   - **Learning:** Start with 10, see what tasks need more
+
 3. **Tool Timeout:**
-    
-    - Should tools have execution timeout?
-    - What's reasonable for file operations?
-    - **Learning:** Add 5s default, log when timeouts occur
+   - Should tools have execution timeout?
+   - What's reasonable for file operations?
+   - **Learning:** Add 5s default, log when timeouts occur
+
 4. **Logging:**
-    
-    - How verbose should logging be?
-    - File logging or just console?
-    - Structured logs (JSON) or human-readable?
-    - **Learning:** Start with verbose console logs, you can reduce later
+   - How verbose should logging be?
+   - File logging or just console?
+   - Structured logs (JSON) or human-readable?
+   - **Learning:** Start with verbose console logs, you can reduce later
+
 5. **Configuration:**
-    
-    - What should be configurable? (model, base URL, max iterations, context limit)
-    - Config file format? (JSON, YAML, TypeScript)
-    - Environment variables?
-    - **Learning:** Start hardcoded, extract to config as patterns emerge
+   - What should be configurable? (model, base URL, max iterations, context limit)
+   - Config file format? (JSON, YAML, TypeScript)
+   - Environment variables?
+   - **Learning:** Start hardcoded, extract to config as patterns emerge
 
 ---
 
@@ -857,11 +855,12 @@ Create `learning/experiments.md`:
 # Experiment Log
 
 ## Date: [Date]
-**What I Tried:** 
-**Expected:** 
-**What Happened:** 
-**Surprised By:** 
-**Next Question:** 
+
+**What I Tried:**
+**Expected:**
+**What Happened:**
+**Surprised By:**
+**Next Question:**
 
 ---
 ```
@@ -872,6 +871,7 @@ As you discover failure modes, document them:
 
 ```markdown
 # Failure Pattern: [Name]
+
 **Frequency:** How often
 **Trigger:** What causes it
 **Solution:** What fixed it

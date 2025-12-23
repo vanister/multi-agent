@@ -3,7 +3,8 @@
 See the [quick-reference](./quick-reference.md) for design decisions.
 
 ## Phase 1: Project Setup & Foundation
-*Goal: Establish project structure and core dependencies*
+
+_Goal: Establish project structure and core dependencies_
 
 1. **Initialize Project**
    1. [x] Create project directory structure
@@ -13,9 +14,9 @@ See the [quick-reference](./quick-reference.md) for design decisions.
 
 2. **Install Dependencies**
    1. [x] Core: `typescript`, `tsx` (for running TS directly)
-   3. [x] Validation: `zod`
-   4. [x] CLI: `commander` 
-   5. [x] `tsx` watch mode
+   2. [x] Validation: `zod`
+   3. [x] CLI: `commander`
+   4. [x] `tsx` watch mode
 
 3. **Create Type System** (do these when they're needed, not now)
    1. [-] Define `src/shared/types.d.ts` with Message, LLMResponse
@@ -27,9 +28,9 @@ See the [quick-reference](./quick-reference.md) for design decisions.
    2. [x] Start Ollama service
    3. [x] Pull qwen2.5-coder:3b model
 
-
 ## Phase 2: Core Services & Components
-*Goal: Build the foundational services that the agent will use*
+
+_Goal: Build the foundational services that the agent will use_
 
 1. **LLM Service** (`src/llm/LlmService.ts`)
    1. [x] Define LLMService interface
@@ -53,7 +54,7 @@ See the [quick-reference](./quick-reference.md) for design decisions.
    1. [x] Implement ToolRegistry class with register/execute/list methods
    2. [x] Add Zod validation in execute method
    3. [x] Create file_read tool with args schema
-   ~~4. [ ] Create file_write tool with args schema~~
+          ~~4. [ ] Create file_write tool with args schema~~
 
 4. **Parser** (`src/agent/parser.ts`)
    1. [x] Implement `stripMarkdown` function
@@ -69,9 +70,9 @@ See the [quick-reference](./quick-reference.md) for design decisions.
    1. [ ] Test integration with Ollama through `LlmService`
    2. [ ] Complete integration with all services and components
 
-
 ## Phase 3: Agent Loop Implementation
-*Goal: Create the core agent orchestration logic*
+
+_Goal: Create the core agent orchestration logic_
 
 1. **Agent Core** (`src/agent/core.ts`)
    1. [ ] Implement runAgent function
@@ -103,9 +104,9 @@ See the [quick-reference](./quick-reference.md) for design decisions.
    3. [ ] Test error recovery scenarios
    4. [ ] Test context limit behavior
 
-
 ## Phase 4: Interactive CLI Mode
-*Goal: Create usable interface for real-world testing*
+
+_Goal: Create usable interface for real-world testing_
 
 1. **CLI Framework** (`src/cli/`)
    1. [ ] Setup commander with basic commands
@@ -131,17 +132,18 @@ See the [quick-reference](./quick-reference.md) for design decisions.
    3. [ ] Handle startup errors gracefully
    4. [ ] Add debug mode with verbose logging
 
-
 ## Validation Checklist for MVP
 
 ### Learning Objectives
+
 - [ ] Understand why tool calls fail
-- [ ] Can debug malformed JSON responses  
+- [ ] Can debug malformed JSON responses
 - [ ] Know how context limits affect behavior
 - [ ] Recognize prompt engineering importance
 - [ ] See qwen2.5-coder:3b limitations firsthand
 
 ### Technical Requirements
+
 - [ ] Agent can read files
 - [ ] Agent can write files
 - [ ] Agent handles errors gracefully
@@ -149,12 +151,14 @@ See the [quick-reference](./quick-reference.md) for design decisions.
 - [ ] Context doesn't overflow
 
 ### Practical Usage
+
 - [ ] Can run from command line
 - [ ] Interactive mode maintains state
 - [ ] Clear output shows what's happening
 - [ ] Actually useful for simple coding tasks
 
 ## Next Steps After MVP
+
 - [ ] Add command execution tool
 - [ ] Compare 3b vs 7b model behavior
 - [ ] Implement RAG (Phase 3 in learning path)

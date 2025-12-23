@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const toolCallSchema = z.object({
   name: z.string(),
@@ -12,7 +12,7 @@ export const toolResultSchema = z.object({
 });
 
 export const fileReadArgsSchema = z.object({
-  path: z.string().min(1, "Path cannot be empty")
+  path: z.string().min(1, 'Path cannot be empty')
 });
 
 export type ToolCall = z.infer<typeof toolCallSchema>;

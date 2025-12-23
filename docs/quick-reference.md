@@ -12,31 +12,34 @@
 ## Core Types
 
 ```typescript
-type Message = { role: 'system' | 'user' | 'assistant'; content: string }
-type ToolCall = { name: string; args: Record<string, unknown> }
-type ToolResult = { success: boolean; data?: unknown; error?: string }
+type Message = { role: 'system' | 'user' | 'assistant'; content: string };
+type ToolCall = { name: string; args: Record<string, unknown> };
+type ToolResult = { success: boolean; data?: unknown; error?: string };
 type Tool<T> = {
-  name: string
-  description: string
-  parameters: Record<string, unknown>
-  argsSchema: z.ZodSchema<T>
-  execute: (args: T) => Promise<ToolResult>
-}
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+  argsSchema: z.ZodSchema<T>;
+  execute: (args: T) => Promise<ToolResult>;
+};
 ```
 
 ## Tool Protocol
 
 **Tool Call:**
+
 ```json
 { "tool": "file_read", "args": { "path": "src/index.ts" } }
 ```
 
 **Tool Result:**
+
 ```json
 { "tool_result": { "tool": "file_read", "success": true, "data": "..." } }
 ```
 
 **Completion:**
+
 ```json
 { "done": true, "response": "Final answer..." }
 ```
@@ -59,6 +62,7 @@ src/
 ```
 
 **Next:**
+
 - Phase 3: Agent loop (runAgent, error recovery, completion)
 - Phase 4: CLI interface
 

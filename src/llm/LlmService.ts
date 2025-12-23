@@ -1,6 +1,6 @@
-import type { Message, LlmResult, OllamaChatResponse } from "./schemas.js";
-import type { HttpClient } from "../utilities/HttpClient.js";
-import { LlmError, OllamaApiError } from "./LlmErrors.js";
+import type { Message, LlmResult, OllamaChatResponse } from './schemas.js';
+import type { HttpClient } from '../utilities/HttpClient.js';
+import { LlmError, OllamaApiError } from './LlmErrors.js';
 
 export interface LlmService {
   chat(messages: Message[]): Promise<LlmResult>;
@@ -33,7 +33,7 @@ export class OllamaLlmService implements LlmService {
       }
 
       if (response.data?.message == null) {
-        throw new LlmError("Invalid response from Ollama: missing message", response.data);
+        throw new LlmError('Invalid response from Ollama: missing message', response.data);
       }
 
       return { content: response.data.message.content };

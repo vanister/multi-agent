@@ -1,14 +1,17 @@
 export class ToolRegistryError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown
+  ) {
     super(message);
-    this.name = "ToolRegistryError";
+    this.name = 'ToolRegistryError';
   }
 }
 
 export class ToolAlreadyRegisteredError extends Error {
   constructor(toolName: string) {
     super(`Tool '${toolName}' is already registered`);
-    this.name = "ToolAlreadyRegisteredError";
+    this.name = 'ToolAlreadyRegisteredError';
   }
 }
 
@@ -20,7 +23,7 @@ export class FileSizeError extends Error {
       `File at '${path}' exceeds size limit: ${actualMB}MB (max: ${maxMB}MB). ` +
         `Try a smaller file or split content into multiple files.`
     );
-    this.name = "FileSizeError";
+    this.name = 'FileSizeError';
   }
 }
 
@@ -30,7 +33,7 @@ export class SandboxNotFoundError extends Error {
       `Sandbox directory not found at '${sandboxPath}'. ` +
         `Please create the sandbox directory before using file operations.`
     );
-    this.name = "SandboxNotFoundError";
+    this.name = 'SandboxNotFoundError';
   }
 }
 
@@ -40,6 +43,6 @@ export class PathValidationError extends Error {
       `Path validation failed for '${requestedPath}': ${reason}. ` +
         `Path must be relative to ./sandbox/ directory. Valid examples: 'test.txt', 'subdir/file.js'`
     );
-    this.name = "PathValidationError";
+    this.name = 'PathValidationError';
   }
 }

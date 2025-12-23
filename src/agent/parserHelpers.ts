@@ -1,4 +1,4 @@
-import type { ZodError } from "zod";
+import type { ZodError } from 'zod';
 
 /**
  * Builds enhanced error message for JSON parse failures.
@@ -29,7 +29,7 @@ export function buildValidationErrorMessage(
 
   const receivedDisplay = receivedShape
     ? `\nYou provided: ${JSON.stringify(receivedShape, null, 2)}\n`
-    : "";
+    : '';
 
   return (
     `Response validation failed\n\n` +
@@ -47,13 +47,13 @@ function extractPosition(errorMsg: string): number | undefined {
 
 function getExcerpt(text: string, position?: number): string {
   if (!position || text.length < 50) {
-    return `Received: ${text.length > 100 ? text.slice(0, 100) + "..." : text}`;
+    return `Received: ${text.length > 100 ? text.slice(0, 100) + '...' : text}`;
   }
 
   const start = Math.max(0, position - 20);
   const end = Math.min(text.length, position + 20);
   const excerpt = text.slice(start, end);
-  const pointer = " ".repeat(Math.min(20, position - start)) + "^";
+  const pointer = ' '.repeat(Math.min(20, position - start)) + '^';
 
   return `Problem near:\n${excerpt}\n${pointer}`;
 }
@@ -61,17 +61,17 @@ function getExcerpt(text: string, position?: number): string {
 function getCommonFixes(errorMsg: string): string {
   const fixes = [];
 
-  if (errorMsg.includes("Unexpected token") || errorMsg.includes("Expected")) {
-    fixes.push("- Check for missing quotes around strings");
-    fixes.push("- Check for trailing commas");
+  if (errorMsg.includes('Unexpected token') || errorMsg.includes('Expected')) {
+    fixes.push('- Check for missing quotes around strings');
+    fixes.push('- Check for trailing commas');
     fixes.push('- Ensure all strings use double quotes "');
   }
-  if (errorMsg.includes("Unexpected end") || errorMsg.includes("end of data")) {
-    fixes.push("- Check for missing closing braces }");
-    fixes.push("- Check for missing closing brackets ]");
+  if (errorMsg.includes('Unexpected end') || errorMsg.includes('end of data')) {
+    fixes.push('- Check for missing closing braces }');
+    fixes.push('- Check for missing closing brackets ]');
   }
 
-  return fixes.length > 0 ? fixes.join("\n") : "- Verify JSON syntax is correct";
+  return fixes.length > 0 ? fixes.join('\n') : '- Verify JSON syntax is correct';
 }
 
 const VALID_FORMAT_EXAMPLES =
@@ -83,23 +83,23 @@ const VALID_FORMAT_EXAMPLES =
  */
 export function formatZodError(error: ZodError): string {
   const issues = error.issues.map((issue, idx) => {
-    const path = issue.path.length > 0 ? `"${issue.path.join(".")}"` : "root";
+    const path = issue.path.length > 0 ? `"${issue.path.join('.')}"` : 'root';
     const location = `  ${idx + 1}. Field ${path}:`;
     const problem = `     Problem: ${issue.message}`;
 
     // Extract received type for invalid_type errors
-    let received = "";
-    if (issue.code === "invalid_type") {
+    let received = '';
+    if (issue.code === 'invalid_type') {
       const invalidTypeIssue = issue as { received?: string };
       if (invalidTypeIssue.received) {
         received = `     Received: ${invalidTypeIssue.received}`;
       }
     }
 
-    return [location, problem, received].filter(Boolean).join("\n");
+    return [location, problem, received].filter(Boolean).join('\n');
   });
 
-  return issues.join("\n\n");
+  return issues.join('\n\n');
 }
 
 /**
@@ -108,34 +108,34 @@ export function formatZodError(error: ZodError): string {
  */
 export function getExpectedFormatExamples(error: ZodError): string {
   const issues = error.issues;
-  const hasDoneIssue = issues.some((i) => i.path.includes("done"));
-  const hasToolIssue = issues.some((i) => i.path.includes("tool"));
-  const hasResponseIssue = issues.some((i) => i.path.includes("response"));
-  const hasArgsIssue = issues.some((i) => i.path.includes("args"));
-  const hasUnknownKeys = issues.some((i) => i.code === "unrecognized_keys");
+  const hasDoneIssue = issues.some((i) => i.path.includes('done'));
+  const hasToolIssue = issues.some((i) => i.path.includes('tool'));
+  const hasResponseIssue = issues.some((i) => i.path.includes('response'));
+  const hasArgsIssue = issues.some((i) => i.path.includes('args'));
+  const hasUnknownKeys = issues.some((i) => i.code === 'unrecognized_keys');
 
-  const examples = ["Expected format (choose one):"];
+  const examples = ['Expected format (choose one):'];
 
   // Always show both valid formats
   examples.push(
-    "\n1. Tool call:",
-    "   {",
+    '\n1. Tool call:',
+    '   {',
     '     "tool": "tool_name",',
     '     "args": { "param": "value" }',
-    "   }"
+    '   }'
   );
 
   examples.push(
-    "\n2. Completion:",
-    "   {",
+    '\n2. Completion:',
+    '   {',
     '     "done": true,',
     '     "response": "Your final answer"',
-    "   }"
+    '   }'
   );
 
   // Add specific hints based on error
   if (hasUnknownKeys) {
-    examples.push("\nNote: Extra fields are not allowed (strict mode)");
+    examples.push('\nNote: Extra fields are not allowed (strict mode)');
   }
   if (hasDoneIssue && !hasResponseIssue) {
     examples.push('\nHint: "done" must be exactly true (not false)');
@@ -148,7 +148,7 @@ export function getExpectedFormatExamples(error: ZodError): string {
     examples.push('\nHint: "args" must be an object, not a string or array');
   }
 
-  return examples.join("\n");
+  return examples.join('\n');
 }
 
 /**
@@ -156,17 +156,17 @@ export function getExpectedFormatExamples(error: ZodError): string {
  */
 export function getRecoveryGuidance(shape?: Record<string, unknown>): string {
   if (!shape) {
-    return "Recovery: Ensure response matches one of the expected formats above";
+    return 'Recovery: Ensure response matches one of the expected formats above';
   }
 
-  const guidance = ["Recovery suggestions:"];
+  const guidance = ['Recovery suggestions:'];
   const keys = Object.keys(shape);
 
   // Check what they tried to do
-  const hasDone = "done" in shape;
-  const hasResponse = "response" in shape;
-  const hasTool = "tool" in shape;
-  const hasArgs = "args" in shape;
+  const hasDone = 'done' in shape;
+  const hasResponse = 'response' in shape;
+  const hasTool = 'tool' in shape;
+  const hasArgs = 'args' in shape;
 
   if (hasDone && !hasResponse) {
     guidance.push('- Add "response" field with your final answer');
@@ -177,7 +177,7 @@ export function getRecoveryGuidance(shape?: Record<string, unknown>): string {
   if (hasTool && !hasArgs) {
     guidance.push('- Add "args" field (use {} if tool needs no arguments)');
   }
-  if (hasArgs && typeof shape.args !== "object") {
+  if (hasArgs && typeof shape.args !== 'object') {
     guidance.push('- Change "args" to an object: { "key": "value" }');
   }
   if (!hasDone && !hasTool) {
@@ -187,15 +187,15 @@ export function getRecoveryGuidance(shape?: Record<string, unknown>): string {
     guidance.push('- Remove either "tool" or "done" - cannot have both');
   }
   if (keys.length > 2) {
-    guidance.push("- Remove extra fields - only include required fields");
+    guidance.push('- Remove extra fields - only include required fields');
   }
 
   // Only provide generic guidance if no specific issues were found
   if (guidance.length === 1 && hasDone && hasTool) {
     // Skip generic guidance if we already suggested removing conflicting fields
   } else if (guidance.length === 1) {
-    guidance.push("- Double-check field names and types match examples");
+    guidance.push('- Double-check field names and types match examples');
   }
 
-  return guidance.join("\n");
+  return guidance.join('\n');
 }

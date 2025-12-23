@@ -1,7 +1,7 @@
-import type { Tool, ToolMetadata } from "./tool-types.js";
-import type { ToolCall, ToolResult } from "./schemas.js";
-import { ToolAlreadyRegisteredError } from "./ToolErrors.js";
-import { z } from "zod";
+import type { Tool, ToolMetadata } from './tool-types.js';
+import type { ToolCall, ToolResult } from './schemas.js';
+import { ToolAlreadyRegisteredError } from './ToolErrors.js';
+import { z } from 'zod';
 
 export interface ToolRegistry {
   register(tool: Tool): void;

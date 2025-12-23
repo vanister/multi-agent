@@ -1,8 +1,8 @@
 export function hasErrorCode(error: unknown): error is { code: string } {
   return (
-    typeof error === "object" &&
+    typeof error === 'object' &&
     error !== null &&
-    "code" in error &&
-    typeof (error as any).code === "string"
+    'code' in error &&
+    typeof (error as any).code === 'string'
   );
 }
