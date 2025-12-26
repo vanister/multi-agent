@@ -7,3 +7,7 @@ export const OLLAMA_TIMEOUT_MS = +(process.env.OLLAMA_TIMEOUT_MS || 30000);
 
 export const SANDBOX_DIR = path.resolve(process.cwd(), './sandbox');
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+
+export const MAX_AGENT_ITERATIONS = 10;
+export const AGENT_CONTEXT_LIMIT_THRESHOLD = 0.8;
+export const AGENT_MAX_TOKENS = 32768;
