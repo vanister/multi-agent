@@ -54,7 +54,7 @@ _Goal: Build the foundational services that the agent will use_
    1. [x] Implement ToolRegistry class with register/execute/list methods
    2. [x] Add Zod validation in execute method
    3. [x] Create file_read tool with args schema
-          ~~4. [ ] Create file_write tool with args schema~~
+   4. ~~[ ] Create file_write tool with args schema~~
 
 4. **Parser** (`src/agent/parser.ts`)
    1. [x] Implement `stripMarkdown` function
@@ -68,7 +68,7 @@ _Goal: Build the foundational services that the agent will use_
 
 6. **Integration Testing**
    1. [x] Test integration with Ollama through `LlmService`
-   2. [] Complete integration with all services and components
+   2. [ ] Complete integration with all services and components
 
 ## Phase 3: Agent Loop Implementation
 
