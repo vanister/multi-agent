@@ -68,7 +68,13 @@ _Goal: Build the foundational services that the agent will use_
 
 6. **Integration Testing**
    1. [x] Test integration with Ollama through `LlmService`
-   2. [ ] Complete integration with all services and components
+   2. [x] Complete integration with all services and components
+      - [x] LlmService integration tests: 8 tests, 96.77% coverage
+      - [x] ConversationService integration tests: 15 tests, 100% coverage
+      - [x] ToolRegistry integration tests: 13 tests, 100% coverage
+      - [x] Parser→Validator pipeline tests: 22 tests, 100% coverage
+      - [x] Full message flow tests: 5 tests, simulates complete agent turn
+      - [x] Total: 63 passing integration tests
 
 ## Phase 3: Agent Loop Implementation
 
