@@ -6,49 +6,18 @@ import { parseJson } from '../../src/agent/parser.js';
 import { validateResponse } from '../../src/agent/validator.js';
 import { InMemoryToolRegistry } from '../../src/tools/ToolRegistry.js';
 import { InMemoryConversationService } from '../../src/conversation/ConversationService.js';
-import type { HttpClient } from '../../src/utilities/HttpClient.js';
-import type { ConversationRepository } from '../../src/conversation/ConversationRepository.js';
 import type { Conversation } from '../../src/conversation/schemas.js';
 import type { Message } from '../../src/llm/schemas.js';
-import type { Tool } from '../../src/tools/tool-types.js';
-import { ConversationNotFoundError } from '../../src/conversation/ConversationErrors.js';
-import { z } from 'zod';
+import { createMockHttpClient } from '../mocks/httpClient.js';
+import { createMockConversationRepository } from '../mocks/conversationRepository.js';
+import { createMockToolRegistry } from '../mocks/toolRegistry.js';
+import { echoTool, failTool } from '../fixtures/tools.js';
 
 describe('Full Message Flow Integration', () => {
   const conversationId = 'test-flow';
   const conversationStore = new Map<string, Conversation>();
-
-  const mockHttpClient: HttpClient = {
-    post: vi.fn()
-  };
-
-  const mockRepository: ConversationRepository = {
-    create: vi.fn(async (id: string, conversation: Conversation) => {
-      conversationStore.set(id, conversation);
-    }),
-    get: vi.fn(async (id: string) => {
-      return conversationStore.get(id) ?? null;
-    }),
-    add: vi.fn(async (id: string, message: Message) => {
-      const conversation = conversationStore.get(id);
-      if (!conversation) {
-        throw new ConversationNotFoundError(id);
-      }
-      conversation.messages.push(message);
-      conversation.updatedAt = new Date();
-    }),
-    update: vi.fn(async (id: string, messages: Message[]) => {
-      const conversation = conversationStore.get(id);
-      if (!conversation) {
-        throw new ConversationNotFoundError(id);
-      }
-      conversation.messages = messages;
-      conversation.updatedAt = new Date();
-    }),
-    delete: vi.fn(async (id: string) => {
-      conversationStore.delete(id);
-    })
-  };
+  const mockHttpClient = createMockHttpClient();
+  const mockRepository = createMockConversationRepository(conversationStore);
 
   const llmService = new OllamaLlmService(
     mockHttpClient,
@@ -60,22 +29,9 @@ describe('Full Message Flow Integration', () => {
   let toolRegistry: InMemoryToolRegistry;
   const conversationService = new InMemoryConversationService(conversationId, mockRepository);
 
-  // Mock echo tool
-  const echoTool: Tool = {
-    name: 'echo',
-    description: 'Echoes the input message',
-    parameters: { message: 'string - Message to echo' },
-    argsSchema: z.object({ message: z.string() }),
-    execute: vi.fn(async (args: any) => ({
-      success: true,
-      data: `Echo: ${args.message}`
-    }))
-  };
-
   beforeEach(() => {
     conversationStore.clear();
-    toolRegistry = new InMemoryToolRegistry();
-    toolRegistry.register(echoTool);
+    toolRegistry = createMockToolRegistry([echoTool]);
     vi.clearAllMocks();
   });
 
@@ -123,7 +79,7 @@ describe('Full Message Flow Integration', () => {
         });
 
         expect(toolResult.success).toBe(true);
-        expect(toolResult.data).toBe('Echo: hello world');
+        expect(toolResult.data).toBe('hello world');
 
         // Step 5: Add messages to conversation
         await conversationService.add(messages[1]); // User message
@@ -199,10 +155,7 @@ describe('Full Message Flow Integration', () => {
 
       // New user input
       const systemPrompt = buildSystemPrompt(toolRegistry.list());
-      const fullHistory = [
-        { role: 'system' as const, content: systemPrompt },
-        ...existingHistory
-      ];
+      const fullHistory = [{ role: 'system' as const, content: systemPrompt }, ...existingHistory];
       const newInput = 'Echo my greeting';
       const messages = buildContext(newInput, fullHistory);
 
@@ -228,6 +181,9 @@ describe('Full Message Flow Integration', () => {
           name: validated.data.tool,
           args: validated.data.args
         });
+
+        expect(toolResult.success).toBe(true);
+        expect(toolResult.data).toBe('Hi there!');
 
         // Add to conversation
         await conversationService.add(messages[messages.length - 1]); // New user message
@@ -267,17 +223,6 @@ describe('Full Message Flow Integration', () => {
     it('should handle tool execution failure', async () => {
       await conversationService.create();
 
-      // Tool that always fails
-      const failTool: Tool = {
-        name: 'fail_tool',
-        description: 'Always fails',
-        parameters: {},
-        argsSchema: z.object({}),
-        execute: vi.fn(async () => ({
-          success: false,
-          error: 'Tool failed'
-        }))
-      };
       toolRegistry.register(failTool);
 
       const messages = buildContext('Test fail tool', []);

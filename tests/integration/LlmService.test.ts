@@ -3,12 +3,10 @@ import { OllamaLlmService } from '../../src/llm/LlmService.js';
 import { SIMPLE_CHAT_RESPONSE, TOOL_CALL_RESPONSE } from '../fixtures/llmResponses.js';
 import { LlmError, OllamaApiError } from '../../src/llm/LlmErrors.js';
 import type { Message } from '../../src/llm/schemas.js';
-import type { HttpClient } from '../../src/utilities/HttpClient.js';
+import { createMockHttpClient } from '../mocks/httpClient.js';
 
 describe('LlmService Integration', () => {
-  const mockHttpClient: HttpClient = {
-    post: vi.fn()
-  };
+  const mockHttpClient = createMockHttpClient();
 
   const llmService = new OllamaLlmService(
     mockHttpClient,

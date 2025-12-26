@@ -1,61 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { InMemoryToolRegistry } from '../../src/tools/ToolRegistry.js';
 import { ToolAlreadyRegisteredError } from '../../src/tools/ToolErrors.js';
-import type { Tool } from '../../src/tools/tool-types.js';
-import type { ToolCall, ToolResult } from '../../src/tools/schemas.js';
-import { z } from 'zod';
+import type { ToolCall } from '../../src/tools/schemas.js';
+import { echoTool, errorTool, calculateTool } from '../fixtures/tools.js';
 
 describe('ToolRegistry Integration', () => {
   let toolRegistry: InMemoryToolRegistry;
-
-  // Mock tool that echoes input
-  const echoArgsSchema = z.object({
-    message: z.string()
-  });
-
-  const echoTool: Tool = {
-    name: 'echo',
-    description: 'Echoes the input message',
-    parameters: { message: 'string - Message to echo' },
-    argsSchema: echoArgsSchema,
-    execute: vi.fn(async (args: any) => ({
-      success: true,
-      data: args.message
-    }))
-  };
-
-  // Mock tool that throws error
-  const errorTool: Tool = {
-    name: 'error_tool',
-    description: 'Always throws an error',
-    parameters: {},
-    argsSchema: z.object({}),
-    execute: vi.fn(async () => {
-      throw new Error('Tool execution failed');
-    })
-  };
-
-  // Mock tool with complex args
-  const calculateArgsSchema = z.object({
-    a: z.number(),
-    b: z.number(),
-    operation: z.enum(['add', 'subtract'])
-  });
-
-  const calculateTool: Tool = {
-    name: 'calculate',
-    description: 'Performs arithmetic operations',
-    parameters: {
-      a: 'number - First operand',
-      b: 'number - Second operand',
-      operation: "string - Operation: 'add' or 'subtract'"
-    },
-    argsSchema: calculateArgsSchema,
-    execute: vi.fn(async (args: any) => {
-      const result = args.operation === 'add' ? args.a + args.b : args.a - args.b;
-      return { success: true, data: result };
-    })
-  };
 
   beforeEach(() => {
     toolRegistry = new InMemoryToolRegistry();

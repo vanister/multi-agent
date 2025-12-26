@@ -5,42 +5,14 @@ import {
   ConversationNotFoundError,
   ConversationDataCorruptedError
 } from '../../src/conversation/ConversationErrors.js';
-import type { ConversationRepository } from '../../src/conversation/ConversationRepository.js';
-import type { Message } from '../../src/llm/schemas.js';
 import type { Conversation } from '../../src/conversation/schemas.js';
+import type { Message } from '../../src/llm/schemas.js';
+import { createMockConversationRepository } from '../mocks/conversationRepository.js';
 
 describe('ConversationService Integration', () => {
   const conversationId = 'test-conversation-id';
   const conversationStore = new Map<string, Conversation>();
-
-  const mockRepository: ConversationRepository = {
-    create: vi.fn(async (id: string, conversation: Conversation) => {
-      conversationStore.set(id, conversation);
-    }),
-    get: vi.fn(async (id: string) => {
-      return conversationStore.get(id) ?? null;
-    }),
-    add: vi.fn(async (id: string, message: Message) => {
-      const conversation = conversationStore.get(id);
-      if (!conversation) {
-        throw new ConversationNotFoundError(id);
-      }
-      conversation.messages.push(message);
-      conversation.updatedAt = new Date();
-    }),
-    update: vi.fn(async (id: string, messages: Message[]) => {
-      const conversation = conversationStore.get(id);
-      if (!conversation) {
-        throw new ConversationNotFoundError(id);
-      }
-      conversation.messages = messages;
-      conversation.updatedAt = new Date();
-    }),
-    delete: vi.fn(async (id: string) => {
-      conversationStore.delete(id);
-    })
-  };
-
+  const mockRepository = createMockConversationRepository(conversationStore);
   const conversationService = new InMemoryConversationService(conversationId, mockRepository);
 
   beforeEach(() => {
