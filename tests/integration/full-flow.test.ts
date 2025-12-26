@@ -18,6 +18,7 @@ describe('Full Message Flow Integration', () => {
   const conversationStore = new Map<string, Conversation>();
   const mockHttpClient = createMockHttpClient();
   const mockRepository = createMockConversationRepository(conversationStore);
+  const conversationService = new InMemoryConversationService(conversationId, mockRepository);
 
   const llmService = new OllamaLlmService(
     mockHttpClient,
@@ -27,7 +28,6 @@ describe('Full Message Flow Integration', () => {
   );
 
   let toolRegistry: InMemoryToolRegistry;
-  const conversationService = new InMemoryConversationService(conversationId, mockRepository);
 
   beforeEach(() => {
     conversationStore.clear();
