@@ -95,19 +95,6 @@ export async function runAgent(
         continue;
       }
 
-      if ('done' in validated.data) {
-        await services.conversation.add({
-          role: 'assistant',
-          content: llmResult.content
-        });
-
-        return {
-          success: true,
-          response: validated.data.response,
-          metrics
-        };
-      }
-
       if ('tool' in validated.data) {
         metrics.toolCalls++;
 
@@ -126,6 +113,19 @@ export async function runAgent(
         });
 
         continue;
+      }
+
+      if ('done' in validated.data) {
+        await services.conversation.add({
+          role: 'assistant',
+          content: llmResult.content
+        });
+
+        return {
+          success: true,
+          response: validated.data.response,
+          metrics
+        };
       }
     }
 
