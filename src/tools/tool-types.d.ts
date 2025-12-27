@@ -11,7 +11,7 @@ export type ToolMetadata = {
   parameters: Record<string, unknown>;
 };
 
-export type Tool<TArgs = Record<string, unknown>> = ToolMetadata & {
-  argsSchema: z.ZodSchema<TArgs>;
-  execute: (args: TArgs) => Promise<ToolResult>;
+export type Tool = ToolMetadata & {
+  argsSchema: z.ZodSchema<Record<string, unknown>>;
+  execute: (args: Record<string, unknown>) => Promise<ToolResult>;
 };
