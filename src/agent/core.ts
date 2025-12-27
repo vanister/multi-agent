@@ -1,6 +1,8 @@
-import { parseJson } from './parser.js';
+import { safeParseJson } from './parser.js';
 import { validateResponse } from './validator.js';
 import type { AgentConfig, AgentServices, AgentResult, AgentMetrics } from './agent-types.js';
+import type { ConversationService } from '../conversation/ConversationService.js';
+import type { ToolCallResponse, CompletionResponse } from './schemas.js';
 import { buildParseErrorMessage, buildValidationErrorMessage } from './agentHelpers.js';
 import {
   MAX_AGENT_ITERATIONS,
@@ -8,24 +10,24 @@ import {
   AGENT_MAX_TOKENS
 } from '../config.js';
 
-const DEFAULT_AGENT_CONFIG: Partial<AgentConfig> = {
+const DEFAULT_AGENT_CONFIG: AgentConfig = {
   maxIterations: MAX_AGENT_ITERATIONS,
   contextLimitThreshold: AGENT_CONTEXT_LIMIT_THRESHOLD,
   maxTokens: AGENT_MAX_TOKENS
 };
 
-// todo - abstract this out into private and helper functions
 export async function runAgent(
   userInput: string,
+  systemPrompt: string,
   services: AgentServices,
-  config: AgentConfig
+  config?: Partial<AgentConfig>
 ): Promise<AgentResult> {
-  const mergedConfig = {
+  const mergedConfig: AgentConfig = {
     ...DEFAULT_AGENT_CONFIG,
     ...config
-  } as Required<AgentConfig>;
+  };
 
-  const { systemPrompt, maxIterations, contextLimitThreshold, maxTokens } = mergedConfig;
+  const { maxIterations, contextLimitThreshold, maxTokens } = mergedConfig;
 
   const metrics: AgentMetrics = {
     iterations: 0,
@@ -35,111 +37,147 @@ export async function runAgent(
     contextLimitReached: false
   };
 
-  if (!userInput.trim()) {
-    return {
-      success: false,
-      error: 'User input cannot be empty',
-      metrics
-    };
-  }
+  const validationError = validateInputs(userInput, systemPrompt);
 
-  if (!systemPrompt.trim()) {
-    return {
-      success: false,
-      error: 'System prompt cannot be empty',
-      metrics
-    };
+  if (validationError) {
+    return createResult(validationError, metrics, true);
   }
 
   try {
-    const messages = await services.conversation.getAllMessages();
-
-    if (messages.length === 0) {
-      await services.conversation.create([{ role: 'system', content: systemPrompt }]);
-    }
-
+    await ensureConversationInitialized(services.conversation, systemPrompt);
     await services.conversation.add({ role: 'user', content: userInput });
 
     for (let i = 0; i < maxIterations; i++) {
       metrics.iterations++;
 
       const estimatedTokens = await services.conversation.estimateTokens();
-      if (estimatedTokens > maxTokens * contextLimitThreshold) {
+      const contextLimitReached = checkContextLimit(
+        estimatedTokens,
+        maxTokens,
+        contextLimitThreshold
+      );
+
+      if (contextLimitReached) {
         metrics.contextLimitReached = true;
-        return {
-          success: false,
-          error: `Context limit reached (${estimatedTokens} tokens). Tool calls: ${metrics.toolCalls}, Parse errors: ${metrics.parseErrors}`,
-          metrics
-        };
+
+        return createResult(`Context limit reached (${estimatedTokens} tokens).`, metrics, true);
       }
 
       const currentMessages = await services.conversation.getAllMessages();
       const llmResult = await services.llm.chat(currentMessages);
+      const parseResult = safeParseJson(llmResult.content);
 
-      let parsed: unknown;
-      try {
-        parsed = parseJson(llmResult.content);
-      } catch (error) {
+      if (!parseResult.success) {
         metrics.parseErrors++;
-        const errorMessage = buildParseErrorMessage(error, services.tools);
+
+        const errorMessage = buildParseErrorMessage(parseResult.error, services.tools);
         await services.conversation.add(errorMessage);
+
         continue;
       }
 
-      const validated = validateResponse(parsed);
+      const validated = validateResponse(parseResult.data);
 
       if (!validated.success) {
         metrics.parseErrors++;
+
         const errorMessage = buildValidationErrorMessage(validated);
         await services.conversation.add(errorMessage);
+
         continue;
       }
 
       if ('tool' in validated.data) {
-        metrics.toolCalls++;
-
-        const toolResult = await services.tools.execute({
-          name: validated.data.tool,
-          args: validated.data.args
-        });
-
-        if (!toolResult.success) {
-          metrics.toolFailures++;
-        }
-
-        await services.conversation.add({
-          role: 'assistant',
-          content: JSON.stringify({ tool_result: toolResult })
-        });
+        await executeToolAndUpdateConversation(validated.data, services, metrics);
 
         continue;
       }
 
       if ('done' in validated.data) {
-        await services.conversation.add({
-          role: 'assistant',
-          content: llmResult.content
-        });
+        const response = await handleCompletion(
+          validated.data,
+          llmResult.content,
+          services.conversation
+        );
 
-        return {
-          success: true,
-          response: validated.data.response,
-          metrics
-        };
+        return createResult(response, metrics);
       }
     }
 
-    return {
-      success: false,
-      error: `Max iterations (${maxIterations}) exceeded. Tool calls: ${metrics.toolCalls}, Parse errors: ${metrics.parseErrors}`,
-      metrics
-    };
+    return createResult(`Max iterations (${maxIterations}) exceeded.`, metrics, true);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      success: false,
-      error: `Agent error: ${errorMessage}`,
-      metrics
-    };
+
+    return createResult(`Agent error: ${errorMessage}`, metrics, true);
   }
+}
+
+function validateInputs(userInput: string, systemPrompt: string): string | null {
+  if (!userInput.trim()) {
+    return 'User input cannot be empty';
+  }
+
+  if (!systemPrompt.trim()) {
+    return 'System prompt cannot be empty';
+  }
+
+  return null;
+}
+
+async function ensureConversationInitialized(
+  conversationService: ConversationService,
+  systemPrompt: string
+): Promise<void> {
+  const messages = await conversationService.getAllMessages();
+
+  if (messages.length === 0) {
+    await conversationService.create([{ role: 'system', content: systemPrompt }]);
+  }
+}
+
+function checkContextLimit(estimatedTokens: number, maxTokens: number, threshold: number): boolean {
+  return estimatedTokens > maxTokens * threshold;
+}
+
+async function executeToolAndUpdateConversation(
+  toolCall: ToolCallResponse,
+  services: AgentServices,
+  metrics: AgentMetrics
+): Promise<void> {
+  metrics.toolCalls++;
+
+  const toolResult = await services.tools.execute({
+    name: toolCall.tool,
+    args: toolCall.args
+  });
+
+  if (!toolResult.success) {
+    metrics.toolFailures++;
+  }
+
+  await services.conversation.add({
+    role: 'assistant',
+    content: JSON.stringify({ tool_result: toolResult })
+  });
+}
+
+async function handleCompletion(
+  completion: CompletionResponse,
+  llmContent: string,
+  conversationService: ConversationService
+): Promise<string> {
+  await conversationService.add({
+    role: 'assistant',
+    content: llmContent
+  });
+
+  return completion.response;
+}
+
+function createResult(message: string, metrics: AgentMetrics, isError = false): AgentResult {
+  if (isError) {
+    return { success: false, error: message, metrics };
+  }
+
+  return { success: true, response: message, metrics };
 }

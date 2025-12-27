@@ -3,10 +3,9 @@ import type { ConversationService } from '../conversation/ConversationService.js
 import type { ToolRegistry } from '../tools/ToolRegistry.js';
 
 export type AgentConfig = {
-  systemPrompt: string;
-  maxIterations?: number;
-  contextLimitThreshold?: number;
-  maxTokens?: number;
+  maxIterations: number;
+  contextLimitThreshold: number;
+  maxTokens: number;
 };
 
 export type AgentServices = {

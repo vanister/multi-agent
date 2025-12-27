@@ -25,8 +25,7 @@ describe('runAgent Integration Tests', () => {
     tools: toolRegistry
   };
 
-  const config: AgentConfig = {
-    systemPrompt,
+  const config: Partial<AgentConfig> = {
     maxIterations: 10,
     contextLimitThreshold: 0.8,
     maxTokens: 32768
@@ -49,7 +48,7 @@ describe('runAgent Integration Tests', () => {
         }
       });
 
-      const result = await runAgent('Say hello', services, config);
+      const result = await runAgent('Say hello', systemPrompt, services, config);
 
       expect(result.success).toBe(true);
       expect(result.response).toBe('Hello, I can help you!');
@@ -79,7 +78,7 @@ describe('runAgent Integration Tests', () => {
           }
         });
 
-      const result = await runAgent('Echo test', services, config);
+      const result = await runAgent('Echo test', systemPrompt, services, config);
 
       expect(result.success).toBe(true);
       expect(result.response).toBe('Echoed: test');
@@ -119,7 +118,12 @@ describe('runAgent Integration Tests', () => {
           }
         });
 
-      const result = await runAgent('Calculate 5 + 3 and echo result', services, config);
+      const result = await runAgent(
+        'Calculate 5 + 3 and echo result',
+        systemPrompt,
+        services,
+        config
+      );
 
       expect(result.success).toBe(true);
       expect(result.response).toBe('Calculation complete');
@@ -151,7 +155,7 @@ describe('runAgent Integration Tests', () => {
           }
         });
 
-      const result = await runAgent('Test parse error', services, config);
+      const result = await runAgent('Test parse error', systemPrompt, services, config);
 
       expect(result.success).toBe(true);
       expect(result.response).toBe('Fixed the format');
@@ -189,7 +193,7 @@ describe('runAgent Integration Tests', () => {
           }
         });
 
-      const result = await runAgent('Test validation error', services, config);
+      const result = await runAgent('Test validation error', systemPrompt, services, config);
 
       expect(result.success).toBe(true);
       expect(result.response).toBe('Completed');
@@ -218,7 +222,7 @@ describe('runAgent Integration Tests', () => {
           }
         });
 
-      const result = await runAgent('Test tool failure', services, config);
+      const result = await runAgent('Test tool failure', systemPrompt, services, config);
 
       expect(result.success).toBe(true);
       expect(result.response).toBe('Handled tool failure');
@@ -240,7 +244,7 @@ describe('runAgent Integration Tests', () => {
         }
       });
 
-      const result = await runAgent('Loop forever', services, config);
+      const result = await runAgent('Loop forever', systemPrompt, services, config);
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Max iterations');
@@ -263,7 +267,7 @@ describe('runAgent Integration Tests', () => {
         }
       });
 
-      const result = await runAgent('Fill up context', services, limitedConfig);
+      const result = await runAgent('Fill up context', systemPrompt, services, limitedConfig);
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Context limit reached');
@@ -322,7 +326,7 @@ describe('runAgent Integration Tests', () => {
           }
         });
 
-      const result = await runAgent('Complex flow with errors', services, config);
+      const result = await runAgent('Complex flow with errors', systemPrompt, services, config);
 
       expect(result.success).toBe(true);
       expect(result.metrics.iterations).toBe(5);
@@ -335,7 +339,7 @@ describe('runAgent Integration Tests', () => {
 
   describe('input validation', () => {
     it('should fail with empty user input', async () => {
-      const result = await runAgent('', services, config);
+      const result = await runAgent('', systemPrompt, services, config);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('User input cannot be empty');
@@ -343,7 +347,7 @@ describe('runAgent Integration Tests', () => {
     });
 
     it('should fail with whitespace-only user input', async () => {
-      const result = await runAgent('   \n  \t  ', services, config);
+      const result = await runAgent('   \n  \t  ', systemPrompt, services, config);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('User input cannot be empty');
@@ -351,9 +355,7 @@ describe('runAgent Integration Tests', () => {
     });
 
     it('should fail with empty system prompt', async () => {
-      const emptyConfig = { ...config, systemPrompt: '' };
-
-      const result = await runAgent('Test', services, emptyConfig);
+      const result = await runAgent('Test', '', services, config);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('System prompt cannot be empty');
@@ -361,9 +363,7 @@ describe('runAgent Integration Tests', () => {
     });
 
     it('should fail with whitespace-only system prompt', async () => {
-      const emptyConfig = { ...config, systemPrompt: '   \n  \t  ' };
-
-      const result = await runAgent('Test', services, emptyConfig);
+      const result = await runAgent('Test', '   \n  \t  ', services, config);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('System prompt cannot be empty');
@@ -383,7 +383,7 @@ describe('runAgent Integration Tests', () => {
         }
       });
 
-      await runAgent('First message', services, config);
+      await runAgent('First message', systemPrompt, services, config);
 
       const messages = await services.conversation.getAllMessages();
       expect(messages.length).toBeGreaterThan(0);
@@ -402,11 +402,11 @@ describe('runAgent Integration Tests', () => {
         }
       });
 
-      await runAgent('First', services, config);
+      await runAgent('First', systemPrompt, services, config);
       const messagesAfterFirst = await services.conversation.getAllMessages();
       const firstCount = messagesAfterFirst.length;
 
-      await runAgent('Second', services, config);
+      await runAgent('Second', systemPrompt, services, config);
       const messagesAfterSecond = await services.conversation.getAllMessages();
 
       expect(messagesAfterSecond.length).toBeGreaterThan(firstCount);
@@ -418,7 +418,7 @@ describe('runAgent Integration Tests', () => {
     it('should handle LLM service throwing error', async () => {
       vi.mocked(mockHttpClient.post).mockRejectedValueOnce(new Error('Network error'));
 
-      const result = await runAgent('Test error', services, config);
+      const result = await runAgent('Test error', systemPrompt, services, config);
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Agent error');
@@ -436,7 +436,7 @@ describe('runAgent Integration Tests', () => {
 
       const errorServices = { ...services, conversation: throwingConversation as any };
 
-      const result = await runAgent('Test', errorServices, config);
+      const result = await runAgent('Test', systemPrompt, errorServices, config);
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Agent error');
