@@ -1,4 +1,4 @@
-export type RunCommandOptions = {
+export type AskCommandOptions = {
   model?: string;
   maxIterations?: number;
   showMetrics?: boolean;

@@ -9,9 +9,9 @@ import {
   AGENT_CONTEXT_LIMIT_THRESHOLD,
   AGENT_MAX_TOKENS
 } from '../config.js';
-import type { RunCommandOptions } from './cli-types.js';
+import type { AskCommandOptions } from './cli-types.js';
 
-export async function runCommand(query: string, options: RunCommandOptions): Promise<void> {
+export async function askAgent(prompt: string, options: AskCommandOptions): Promise<void> {
   try {
     const conversationId = randomUUID();
     const services = createServices({
@@ -28,7 +28,7 @@ export async function runCommand(query: string, options: RunCommandOptions): Pro
       maxTokens: AGENT_MAX_TOKENS
     };
 
-    const result = await runAgent(query, systemPrompt, services, config);
+    const result = await runAgent(prompt, systemPrompt, services, config);
     const formattedResult = formatResult(result, options.showMetrics || false);
 
     // todo - take in a logger to avoid using console directly

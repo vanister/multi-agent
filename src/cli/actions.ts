@@ -1,20 +1,20 @@
 import type { Command } from 'commander';
-import type { RunCommandOptions } from './cli-types.js';
-import { runCommand } from './commands.js';
+import type { AskCommandOptions } from './cli-types.js';
+import { askAgent } from './commands.js';
 
-export async function chat(
-  query: string,
+export async function ask(
+  prompt: string,
   options: Record<string, unknown>,
   command: Command
 ): Promise<void> {
   const globalOptions = command.parent?.opts() || {};
 
-  const runOptions: RunCommandOptions = {
+  const askOptions: AskCommandOptions = {
     model: options.model as string | undefined,
     maxIterations: options.maxIterations as number | undefined,
     showMetrics: !!options.showMetrics,
     verbose: !!globalOptions.verbose
   };
 
-  await runCommand(query, runOptions);
+  await askAgent(prompt, askOptions);
 }
