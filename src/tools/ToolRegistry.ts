@@ -1,6 +1,7 @@
 import type { Tool, ToolMetadata } from './tool-types.js';
 import type { ToolCall, ToolResult } from './schemas.js';
 import { ToolAlreadyRegisteredError } from './ToolErrors.js';
+import { createToolError } from './toolHelpers.js';
 import { z } from 'zod';
 
 export interface ToolRegistry {
@@ -24,10 +25,7 @@ export class InMemoryToolRegistry implements ToolRegistry {
     const tool = this.tools.get(toolCall.name);
 
     if (!tool) {
-      return {
-        success: false,
-        error: `Tool '${toolCall.name}' not found`
-      };
+      return createToolError(`Tool '${toolCall.name}' not found`);
     }
 
     const validationResult = tool.argsSchema.safeParse(toolCall.args);
@@ -35,12 +33,9 @@ export class InMemoryToolRegistry implements ToolRegistry {
     if (!validationResult.success) {
       const flattened = z.flattenError(validationResult.error);
 
-      return {
-        success: false,
-        error: `Invalid arguments for tool '${toolCall.name}': ${JSON.stringify(
-          flattened.fieldErrors
-        )}`
-      };
+      return createToolError(
+        `Invalid arguments for tool '${toolCall.name}': ${JSON.stringify(flattened.fieldErrors)}`
+      );
     }
 
     try {
@@ -48,10 +43,7 @@ export class InMemoryToolRegistry implements ToolRegistry {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
 
-      return {
-        success: false,
-        error: `Tool '${toolCall.name}' failed: ${errorMessage}`
-      };
+      return createToolError(`Tool '${toolCall.name}' failed: ${errorMessage}`);
     }
   }
 

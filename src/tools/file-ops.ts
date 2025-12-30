@@ -5,6 +5,7 @@ import { fileReadArgsSchema, type FileReadArgs } from './schemas.js';
 import type { Tool } from './tool-types.js';
 import type { ToolResult } from './schemas.js';
 import { FileSizeError } from './ToolErrors.js';
+import { createToolSuccess } from './toolHelpers.js';
 
 const fsManager = new FileSystemManager(SANDBOX_DIR);
 
@@ -26,9 +27,6 @@ export const fileReadTool: Tool = {
 
     const content = await fs.readFile(validatedPath, 'utf-8');
 
-    return {
-      success: true,
-      data: content
-    };
+    return createToolSuccess(content);
   }
 };

@@ -2,7 +2,7 @@
 
 See the [quick-reference](./quick-reference.md) for design decisions.
 
-## Phase 1: Project Setup & Foundation
+## Phase 1: Project Setup & Foundation (✅ completed)
 
 _Goal: Establish project structure and core dependencies_
 
@@ -28,7 +28,7 @@ _Goal: Establish project structure and core dependencies_
    2. [x] Start Ollama service
    3. [x] Pull qwen2.5-coder:3b model
 
-## Phase 2: Core Services & Components
+## Phase 2: Core Services & Components (✅ completed)
 
 _Goal: Build the foundational services that the agent will use_
 
@@ -76,7 +76,7 @@ _Goal: Build the foundational services that the agent will use_
       - [x] Full message flow tests: 5 tests, simulates complete agent turn
       - [x] Total: 63 passing integration tests
 
-## Phase 3: Agent Loop Implementation ✅ COMPLETE
+## Phase 3: Agent Loop Implementation (✅ completed)
 
 _Goal: Create the core agent orchestration logic_
 

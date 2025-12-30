@@ -4,6 +4,7 @@ import { InMemoryConversationService } from '../conversation/ConversationService
 import { InMemoryToolRegistry } from '../tools/ToolRegistry.js';
 import { OllamaLlmService } from '../llm/LlmService.js';
 import { fileReadTool } from '../tools/file-ops.js';
+import { calculateTool } from '../tools/calculator.js';
 import type { AgentServices } from '../agent/agent-types.js';
 import { OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_TIMEOUT_MS } from '../config.js';
 
@@ -28,6 +29,7 @@ export function createServices({
 
   // register built-in tools
   toolRegistry.register(fileReadTool);
+  toolRegistry.register(calculateTool);
 
   return {
     llm: llmService,

@@ -3,6 +3,7 @@ import { InMemoryToolRegistry } from '../../src/tools/ToolRegistry.js';
 import { ToolAlreadyRegisteredError } from '../../src/tools/ToolErrors.js';
 import type { ToolCall } from '../../src/tools/schemas.js';
 import { echoTool, errorTool, calculateTool } from '../fixtures/tools.js';
+import { calculateTool as realCalculateTool } from '../../src/tools/calculator.js';
 
 describe('ToolRegistry Integration', () => {
   let toolRegistry: InMemoryToolRegistry;
@@ -202,6 +203,183 @@ describe('ToolRegistry Integration', () => {
         args: {}
       });
       expect(invalidResult.success).toBe(false);
+    });
+  });
+
+  describe('calculator tool integration', () => {
+    beforeEach(() => {
+      toolRegistry.register(realCalculateTool);
+    });
+
+    it('should evaluate simple addition', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '2 + 3' }
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(5);
+    });
+
+    it('should evaluate simple subtraction', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '10 - 3' }
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(7);
+    });
+
+    it('should evaluate simple multiplication', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '4 * 5' }
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(20);
+    });
+
+    it('should evaluate simple division', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '20 / 4' }
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(5);
+    });
+
+    it('should evaluate left-to-right (2 + 3 * 4 = 20, not 14)', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '2 + 3 * 4' }
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(20); // (2 + 3) * 4 = 5 * 4 = 20
+    });
+
+    it('should handle expressions without spaces', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '10+5*2' }
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(30); // (10 + 5) * 2 = 15 * 2 = 30
+    });
+
+    it('should handle expressions with mixed spacing', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '  10  +  5  ' }
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(15);
+    });
+
+    it('should handle decimal numbers', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '2.5 + 3.5' }
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(6);
+    });
+
+    it('should return error for division by zero', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '10 / 0' }
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Division by zero');
+    });
+
+    it('should return error for expression starting with operator (like negative numbers)', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '-5 + 3' }
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('operator without preceding number');
+    });
+
+    it('should handle subtraction that results in negative (still returns negative result)', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '3 - 5' }
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(-2); // Results can be negative, just not inputs
+    });
+
+    it('should return error for invalid characters', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '2 + 3 & 4' }
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Invalid character');
+    });
+
+    it('should return error for expression ending with operator', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '2 + 3 +' }
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('ends with operator');
+    });
+
+    it('should return error for expression starting with operator', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '+ 3 + 4' }
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('operator without preceding number');
+    });
+
+    it('should return error for empty expression', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '' }
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Expression cannot be empty');
+    });
+
+    it('should return error for consecutive operators', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '2 + * 3' }
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('operator without preceding number');
+    });
+
+    it('should handle complex expressions', async () => {
+      const result = await toolRegistry.execute({
+        name: 'calculate',
+        args: { expression: '100 / 2 + 10 * 3 - 5' }
+      });
+
+      expect(result.success).toBe(true);
+      // (((100 / 2) + 10) * 3) - 5 = ((50 + 10) * 3) - 5 = (60 * 3) - 5 = 180 - 5 = 175
+      expect(result.data).toBe(175);
     });
   });
 });
