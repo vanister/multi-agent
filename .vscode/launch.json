@@ -1,0 +1,59 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Agent: Ask",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/src/index.ts",
+      "args": [
+        "ask",
+        "What is 2 + 3 * 4?",
+        "--show-metrics"
+      ],
+      "runtimeArgs": [
+        "--import",
+        "tsx"
+      ],
+      "console": "integratedTerminal",
+      "outputCapture": "std",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Agent: Custom Prompt",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/src/index.ts",
+      "args": [
+        "ask",
+        "${input:prompt}",
+        "--show-metrics"
+      ],
+      "runtimeArgs": [
+        "--import",
+        "tsx"
+      ],
+      "console": "integratedTerminal",
+      "outputCapture": "std",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "prompt",
+      "type": "promptString",
+      "description": "Enter the prompt for the agent",
+      "default": "What is 2 + 2?"
+    }
+  ]
+}
