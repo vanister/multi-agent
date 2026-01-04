@@ -4,7 +4,7 @@
 2. **Dependency Injection**: Services passed to agent, not instantiated internally
 3. **Interface-based Design**: Classes implement interfaces for testability
 4. **Functional Core**: Pure functions for transformations, classes for state
-5. **Type Safety**: Zod for runtime validation, TypeScript for compile-time
+5. **Type Safety**: Runtime validation + compile-time type checking
 6. **KISS**: Keep it simple - one way to do things, no optional complexity
 
 ---
@@ -13,98 +13,34 @@
 
 ```
 coding-agent/
-├── src/
-│   ├── index.ts                 # Entry point with manual DI
-│   │
-│   ├── agent/
-│   │   ├── core.ts              # runAgent() - pure orchestration function
-│   │   ├── parser.ts            # Parse/validate LLM responses
-│   │   └── types.d.ts           # Agent-specific types
-│   │
-│   ├── llm/
-│   │   ├── service.ts           # LLMService interface
-│   │   └── types.d.ts           # Message, LLMResponse types
-│   │
-│   ├── tools/
-│   │   ├── registry.ts          # ToolRegistry interface
-│   │   ├── file-ops.ts          # Tool object definitions
-│   │   ├── command.ts           # Command execution tool
-│   │   └── types.d.ts           # Tool, ToolCall, ToolResult types
-│   │
-│   ├── context/
-│   │   ├── builder.ts           # buildContext() - pure function
-│   │   ├── prompts.ts           # System prompt templates
-│   │   ├── history.ts           # ConversationHistory interface
-│   │   └── types.d.ts           # Context-specific types
-│   │
-│   ├── cli/
-│   │   ├── commands.ts          # CLI command definitions
-│   │   └── types.d.ts           # CLI types
-│   │
-│   └── shared/
-│       ├── types.d.ts           # Cross-cutting types
-│       └── utils.ts             # Common utilities
+├── src/           # Source code
+│   ├── agent/     # Agent orchestration loop, parsing, validation
+│   ├── llm/       # LLM service abstraction and implementations
+│   ├── tools/     # Tool registry and tool definitions
+│   ├── conversation/  # Message history management
+│   ├── context/   # Context building and prompt generation
+│   ├── cli/       # Command-line interface
+│   └── utilities/ # Shared utilities (HTTP, file system, etc.)
 │
-├── learning/                    # Add as you discover
-│   └── experiments.md           # Document your surprises
-│
-├── tests/                       # Mirrors src/ structure
-│   ├── agent/
-│   ├── llm/
-│   └── tools/
-│
-├── tests_integrations/           # End-to-end workflows
-│   └── agent-workflow.test.ts
-│
-├── config.ts                    # Root configuration
-├── package.json
-├── tsconfig.json
-└── .gitignore
+├── docs/          # Documentation
+├── tests/         # Test suites (integration, unit, fixtures, mocks)
+└── sandbox/       # Testing playground
 ```
 
 ---
 
 ## Core Type System
 
-### Type vs Interface Usage
+### Key Data Structures
 
 ```typescript
-// Use 'type' for data shapes
-type Message = { ... }
-type ToolCall = { ... }
-type AgentServices = { ... }
-
-// Use 'interface' for class contracts (colocated with implementation)
-interface LLMService { ... }
-interface ToolRegistry { ... }
-interface ConversationHistory { ... }
-```
-
-### Key Types
-
-```typescript
-// src/shared/types.d.ts
 type Message = {
   role: 'system' | 'user' | 'assistant';
   content: string;
 };
 
-type LLMResponse = {
-  content: string;
-  raw: string; // Original response for debugging
-};
-
-// src/tools/types.d.ts
-type Tool<TArgs = Record<string, unknown>> = {
-  name: string;
-  description: string;
-  parameters: Record<string, unknown>; // Human-readable for LLM
-  argsSchema: z.ZodSchema<TArgs>; // Machine validation with Zod
-  execute: (args: TArgs) => Promise<ToolResult>;
-};
-
 type ToolCall = {
-  name: string;
+  tool: string;
   args: Record<string, unknown>; // Required, can be empty {}
 };
 
@@ -114,27 +50,49 @@ type ToolResult = {
   error?: string;
 };
 
-// src/agent/types.d.ts
+type ToolMetadata = {
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>; // For documentation
+};
+
+type Tool = ToolMetadata & {
+  argsSchema: ValidationSchema; // Runtime validation schema
+  execute: (args: Record<string, unknown>) => Promise<ToolResult>;
+};
+
+type AgentConfig = {
+  maxIterations: number;
+  contextLimitThreshold: number; // e.g., 0.8 for 80%
+  maxTokens: number;
+};
+
 type AgentServices = {
-  llm: LLMService;
-  tools: IToolRegistry;
-  context: ContextBuilder;
+  llm: LlmService;
+  conversation: ConversationService;
+  tools: ToolRegistry;
 };
 
-type ContextBuilder = {
-  buildInitial: (input: string) => Message[];
+type AgentMetrics = {
+  iterations: number;
+  toolCalls: number;
+  parseErrors: number;
+  toolFailures: number;
+  contextLimitReached: boolean;
 };
 
-// Learning additions (optional but helpful)
 type AgentResult = {
-  response: string;
   success: boolean;
-  metrics?: {
-    iterations: number;
-    toolCalls: number;
-    parseErrors: number;
-    tokensUsed?: number;
-  };
+  response?: string;
+  error?: string;
+  metrics: AgentMetrics;
+};
+
+type Conversation = {
+  id: string;
+  messages: Message[];
+  createdAt: number;
+  updatedAt: number;
 };
 ```
 
@@ -157,15 +115,15 @@ type AgentResult = {
 
 **Rationale:**
 
-- Qwen 2.5 Coder has structured output support
-- Zod provides runtime validation and type safety
+- Structured output format is easier to parse
 - JSON is familiar and well-structured
+- Runtime validation catches LLM errors early
 
 **Implementation:**
 
 - System prompt instructs model to output raw JSON (no markdown)
 - Parser strips markdown fences defensively (```json blocks)
-- Zod schemas validate structure and types
+- Schemas validate structure and types before execution
 
 **Learning Note:** Consider trying ReAct format in an experiment to see if showing reasoning helps the model
 
@@ -200,28 +158,17 @@ type AgentResult = {
 
 **Strategy:**
 
-```typescript
-// On parse error:
-messages.push({
-  role: 'system',
-  content: `Error: Invalid response format. 
-  
-  Available tools:
-  - file_read (args: { path: string })
-  - file_write (args: { path: string, content: string })
-  
-  Use JSON format: { "tool": "tool_name", "args": {...} }
-  Or complete with: { "done": true, "response": "..." }`
-});
+**On parse error:**
+- Add system message to conversation
+- Include error description
+- List available tools with signatures
+- Show example of correct format
+- Remind about completion signal
 
-// On tool execution error:
-messages.push({
-  role: 'system',
-  content: `Tool execution failed: ${error}
-  
-  Please try a different approach.`
-});
-```
+**On tool execution error:**
+- Add system message to conversation
+- Include tool name and error details
+- Suggest alternative approach
 
 **Rationale:**
 
@@ -239,18 +186,18 @@ messages.push({
 type ContextState = {
   messages: Message[];
   totalTokens: number; // Approximate count
-  maxTokens: number; // Model's context window
+  maxTokens: number;   // Model's context window
 };
 
-// Simple heuristic: ~4 chars per token
-function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4);
-}
+// Token estimation: simple heuristic
+function estimateTokens(text: string): number;
 
-// Hard stop at 80% capacity
-if (totalTokens > maxTokens * 0.8) {
-  return 'Context limit reached. Start new conversation.';
-}
+// Hard limit check
+function isContextLimitReached(
+  totalTokens: number,
+  maxTokens: number,
+  threshold: number // e.g., 0.8
+): boolean;
 ```
 
 **Rationale:**
@@ -315,28 +262,15 @@ if (totalTokens > maxTokens * 0.8) {
 
 **Two-Layer Approach:**
 
-````typescript
-// Layer 1: System prompt instruction
-const SYSTEM_PROMPT = `
-IMPORTANT: Output raw JSON only. Do not wrap in markdown code blocks.
+**Layer 1 - System prompt instruction:**
+- Instruct: "Output raw JSON only. No markdown code blocks."
+- Include examples of correct/incorrect format
 
-Correct:
-{ "tool": "file_read", "args": { "path": "..." } }
-
-Incorrect:
-\`\`\`json
-{ "tool": "file_read", "args": { "path": "..." } }
-\`\`\`
-`;
-
-// Layer 2: Parser strips markdown anyway
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/```json\n?/g, '')
-    .replace(/```\n?/g, '')
-    .trim();
-}
-````
+**Layer 2 - Parser strips markdown defensively:**
+- Remove \`\`\`json markers
+- Remove \`\`\` markers  
+- Trim whitespace
+- Then parse as JSON
 
 **Rationale:**
 
@@ -346,52 +280,48 @@ function stripMarkdown(text: string): string {
 
 ---
 
-### 7. Tool Arguments: Required Object with Zod Validation
+### 7. Tool Arguments: Required Object with Validation
 
 **Design:**
 
-```typescript
-type Tool<TArgs = Record<string, unknown>> = {
-  name: string;
-  description: string;
-  parameters: Record<string, unknown>;
-  argsSchema: z.ZodSchema<TArgs>;
-  execute: (args: TArgs) => Promise<ToolResult>;
-};
+```
+Tool:
+  - name: string
+  - description: string
+  - parameters: object (for documentation)
+  - argsSchema: validation schema
+  - execute: function(args) -> Promise<ToolResult>
 
-type ToolCall = {
-  name: string;
-  args: Record<string, unknown>; // Required, can be empty {}
-};
+ToolCall:
+  - name: string
+  - args: object (required, can be empty {})
 ```
 
 **Example:**
 
 ```typescript
-const fileReadArgsSchema = z.object({
-  path: z.string()
-});
+type FileReadArgs = {
+  path: string;
+};
 
-const fileReadTool: Tool<z.infer<typeof fileReadArgsSchema>> = {
-  name: 'file_read',
-  description: 'Read file contents',
-  parameters: { path: 'string - Path to file' },
-  argsSchema: fileReadArgsSchema,
-  execute: async (args) => {
-    // args is guaranteed to be { path: string }
-    const { path } = args;
-    // read file...
+const fileReadTool: Tool = {
+  name: "file_read",
+  description: "Read file contents",
+  parameters: { path: "string - Path to file" },
+  argsSchema: fileReadArgsSchema, // Validates FileReadArgs at runtime
+  execute: async (args: FileReadArgs) => {
+    // Implementation validates, reads, returns result
   }
 };
 ```
 
 **Rationale:**
 
-- **Type Safety**: `z.infer<>` gives compile-time types
-- **Runtime Validation**: Catches LLM mistakes before crashes
-- **Consistent Structure**: Every tool call has args (can be `{}`)
+- **Type Safety**: Compile-time type checking
+- **Runtime Validation**: Catches LLM mistakes before execution
+- **Consistent Structure**: Every tool call has args (can be `{}`)
 - **Simple**: One way to define tools, no optional complexity
-- **Better Errors**: Zod provides clear validation messages
+- **Better Errors**: Validation provides clear error messages
 
 ---
 
@@ -413,12 +343,12 @@ sequenceDiagram
         LLM->>Agent: Raw response
         Agent->>Parser: parseResponse(raw)
         Parser->>Parser: Strip markdown
-        Parser->>Parser: Parse JSON with Zod
+        Parser->>Parser: Validate JSON structure
 
         alt Valid tool call
             Parser->>Agent: ToolCall object
             Agent->>Tools: execute(toolCall)
-            Tools->>Tools: Validate args with Zod
+            Tools->>Tools: Validate arguments
             Tools->>Agent: ToolResult
             Agent->>Agent: Format as tool_result, add to messages
         else Done signal
@@ -439,271 +369,186 @@ sequenceDiagram
 
 **Classes (Stateful Services):**
 
-- `OllamaService` - HTTP connection, model config
-- `ToolRegistry` - Tool map, execution
-- `ConversationHistory` - Message list
+- LLM Service - Manages HTTP connections, model configuration
+- Tool Registry - Maintains tool catalog, handles execution
+- Conversation Service - Tracks message history
 
 **Functions (Pure Logic):**
 
-- `runAgent()` - Orchestration loop
-- `buildContext()` - Message array assembly
-- `parseResponse()` - String to structured data
-- `stripMarkdown()` - Text transformation
+- Agent orchestration - Coordinates the main loop
+- Context building - Assembles message arrays
+- Response parsing - Converts strings to structured data
+- Text transformation - Cleans and formats text
 
 ---
 
-### Service Interfaces (Colocated with Implementation)
+### Service Interfaces
 
+**LLM Service:**
 ```typescript
-// src/llm/service.ts
-export interface LLMService {
-  chat(messages: Message[]): Promise<LLMResult>;
-}
-
-export class OllamaService implements LLMService {
-  constructor(
-    private readonly baseUrl: string,
-    private readonly model: string
-  ) {}
-
-  async chat(messages: Message[]): Promise<LLMResult> {
-    // HTTP call to Ollama API
-    // Return structured response or error result
-  }
+interface LlmService {
+  chat(messages: Message[]): Promise<string>;
 }
 ```
 
+**Implementation responsibilities:**
+- Validate input messages
+- Make HTTP call to LLM API
+- Validate API response
+- Extract and return assistant message content
+- Handle network errors and timeouts
+
+---
+
+**Tool Registry:**
 ```typescript
-// src/tools/registry.ts
-export interface IToolRegistry {
+interface ToolRegistry {
   register(tool: Tool): void;
   execute(toolCall: ToolCall): Promise<ToolResult>;
-  list(): Tool[];
-}
-
-export class ToolRegistry implements IToolRegistry {
-  private tools: Map<string, Tool> = new Map();
-
-  register(tool: Tool): void {
-    // Add tool to registry
-  }
-
-  async execute(toolCall: ToolCall): Promise<ToolResult> {
-    const tool = this.tools.get(toolCall.name);
-
-    if (!tool) {
-      return { success: false, error: `Tool not found: ${toolCall.name}` };
-    }
-
-    // Validate args with Zod
-    const parsed = tool.argsSchema.safeParse(toolCall.args);
-
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: `Invalid args: ${parsed.error.message}`
-      };
-    }
-
-    // Execute with validated args
-    return await tool.execute(parsed.data);
-  }
-
-  list(): Tool[] {
-    // Return all registered tools
-  }
+  list(): ToolMetadata[];
 }
 ```
 
-```typescript
-// src/context/history.ts
-export interface IConversationHistory {
-  add(message: Message): void;
-  getAll(): Message[];
-  getRecent(count: number): Message[];
-  clear(): void;
-}
-
-export class ConversationHistory implements IConversationHistory {
-  private messages: Message[] = [];
-
-  add(message: Message): void {}
-  getAll(): Message[] {}
-  getRecent(count: number): Message[] {}
-  clear(): void {}
-}
-```
+**Implementation responsibilities:**
+- Maintain map of tool name → tool definition
+- Prevent duplicate tool registration
+- Validate tool call structure before execution
+- Validate arguments against tool's schema
+- Execute tool and catch exceptions
+- Return structured result (success/failure)
 
 ---
 
-### Tool Definitions (Plain Objects)
-
+**Conversation Service:**
 ```typescript
-// src/tools/file-ops.ts
-const fileReadArgsSchema = z.object({
-  path: z.string()
-});
+interface ConversationService {
+  create(initialMessages?: Message[]): Promise<Conversation>;
+  add(message: Message): Promise<void>;
+  getAllMessages(): Promise<Message[]>;
+  clear(): Promise<void>;
+  estimateTokens(): Promise<number>;
+}
+```
 
-export const fileReadTool: Tool<z.infer<typeof fileReadArgsSchema>> = {
-  name: 'file_read',
-  description: 'Read contents of a file',
-  parameters: {
-    path: 'string - Path to file'
-  },
-  argsSchema: fileReadArgsSchema,
-  execute: async (args) => {
-    // args is typed as { path: string }
-    // Validate args (done by registry)
-    // Read file
-    // Return ToolResult
-  }
+**Implementation responsibilities:**
+- Store messages in repository
+- Validate message structure before adding
+- Estimate token usage (chars / 4 heuristic)
+- Track conversation metadata (timestamps, IDs)
+- Handle concurrent access if needed
+
+---
+
+### Tool Definitions
+
+**Example: File Read Tool**
+```typescript
+type FileReadArgs = {
+  path: string;
 };
 
-const fileWriteArgsSchema = z.object({
-  path: z.string(),
-  content: z.string()
-});
-
-export const fileWriteTool: Tool<z.infer<typeof fileWriteArgsSchema>> = {
-  name: 'file_write',
-  description: 'Write content to a file',
+const fileReadTool: Tool = {
+  name: "file_read",
+  description: "Read contents of a file",
   parameters: {
-    path: 'string - Path to file',
-    content: 'string - Content to write'
+    path: "string - Path to file"
   },
-  argsSchema: fileWriteArgsSchema,
-  execute: async (args) => {
-    // args is typed as { path: string, content: string }
-    // Validate args (done by registry)
-    // Write file
-    // Return ToolResult
+  argsSchema: fileReadArgsSchema, // Validates { path: string }
+  execute: async (args: FileReadArgs) => {
+    // Read file, return { success: true, data: content }
+    // Or on error: { success: false, error: message }
+  }
+};
+```
+
+**Example: Calculator Tool**
+```typescript
+type CalculatorArgs = {
+  operation: 'add' | 'subtract' | 'multiply' | 'divide';
+  a: number;
+  b: number;
+};
+
+const calculatorTool: Tool = {
+  name: "calculator",
+  description: "Perform basic arithmetic",
+  parameters: {
+    operation: "'add' | 'subtract' | 'multiply' | 'divide'",
+    a: "number - First operand",
+    b: "number - Second operand"
+  },
+  argsSchema: calculatorArgsSchema, // Validates CalculatorArgs
+  execute: async (args: CalculatorArgs) => {
+    // Perform operation, return result
+    // Check for division by zero
+    // Return { success: true, data: result } or { success: false, error }
   }
 };
 ```
 
 **Rationale:**
 
-- Plain objects are simpler than classes
+- Simple object definitions, not complex classes
 - Easy to test (just functions)
 - Natural for registry pattern
-- Zod handles all validation
-- Can add more sophisticated tools later if needed
+- Validation handled before execution
+- Can add sophisticated tools as needed
 
 ---
 
 ## System Prompt Design
 
-```typescript
-// src/context/prompts.ts
-export const SYSTEM_PROMPT = `
-You are a coding assistant with access to tools.
+**System prompt structure:**
 
-RESPONSE FORMAT:
-You must respond with valid JSON only. No markdown, no explanations outside JSON.
+1. **Role**: "You are a coding assistant with access to tools"
 
-To use a tool:
-{
-  "tool": "tool_name",
-  "args": {
-    "arg1": "value1",
-    "arg2": "value2"
-  }
-}
+2. **Response Format Instructions**:
+   - Output valid JSON only
+   - No markdown, no explanations outside JSON
 
-For tools with no arguments:
-{
-  "tool": "tool_name",
-  "args": {}
-}
+3. **Tool Call Format**: `{ "tool": "tool_name", "args": { ... } }`
 
-When you have the final answer:
-{
-  "done": true,
-  "response": "Your complete answer here"
-}
+4. **Completion Format**: `{ "done": true, "response": "..." }`
 
-AVAILABLE TOOLS:
-- file_read: Read a file's contents
-  Args: { "path": "string" }
+5. **Available Tools**: For each tool, list name, description, and parameters
 
-- file_write: Write content to a file
-  Args: { "path": "string", "content": "string" }
+6. **Tool Result Format**:
+   - Success: `{ "tool_result": { "tool": "name", "success": true, "data": ... } }`
+   - Failure: `{ "tool_result": { "tool": "name", "success": false, "error": "..." } }`
 
-TOOL RESULTS:
-You will receive tool results in this format:
-{
-  "tool_result": {
-    "tool": "tool_name",
-    "success": true,
-    "data": "result data"
-  }
-}
-
-Or on failure:
-{
-  "tool_result": {
-    "tool": "tool_name",
-    "success": false,
-    "error": "error message"
-  }
-}
-
-IMPORTANT:
-- Always output valid JSON
-- Do not wrap JSON in markdown code blocks
-- Check tool_result.success before proceeding
-- Use multiple tool calls if needed before responding with "done"
-`;
-```
+7. **Important Reminders**:
+   - Always output valid JSON
+   - No markdown code blocks
+   - Check `tool_result.success` before proceeding
+   - Can make multiple tool calls before completion
 
 ---
 
 ## Dependency Injection Pattern
 
-```typescript
-// src/index.ts - Manual DI for Phase 1
+**Service initialization:**
+1. HTTP client (for LLM communication)
+2. LLM service (with client and model name)
+3. Conversation repository (storage backend)
+4. Conversation service (with conversation ID and repository)
+5. Tool registry (with registered tools)
 
-async function main() {
-  // Initialize services
-  const llm = new OllamaService('http://localhost:11434', 'qwen2.5-coder:3b');
+**Agent initialization:**
+1. Get tool metadata from registry
+2. Build system prompt with available tools
+3. Create agent config (max iterations, context limits)
+4. Execute agent with user input, system prompt, services, config
 
-  const tools = new ToolRegistry();
-  tools.register(fileReadTool);
-  tools.register(fileWriteTool);
-
-  const history = new ConversationHistory();
-
-  // Create context builder
-  const contextBuilder = {
-    buildInitial: (input: string) => buildContext(input, history.getAll(), SYSTEM_PROMPT)
-  };
-
-  // Assemble services
-  const services: AgentServices = {
-    llm,
-    tools,
-    context: contextBuilder
-  };
-
-  // Run agent
-  const userInput = 'Read src/index.ts and summarize it';
-  const result = await runAgent(userInput, services);
-
-  console.log(result);
-
-  // Learning addition: Log metrics if available
-  if (result.metrics) {
-    console.log('Metrics:', result.metrics);
-  }
-}
-```
+**Result handling:**
+- Format and display result
+- Show metrics if requested
 
 **Rationale:**
 
 - Explicit dependencies make testing easier
-- Can swap implementations (mock LLM, different tools)
+- Can swap implementations (mock services, different tools)
 - Clear initialization order
-- Can add factory/builder pattern later
+- Services composed at application entry point
 
 ---
 
@@ -719,13 +564,13 @@ async function main() {
 
 **Tasks:**
 
-1. Setup project (package.json, tsconfig, dependencies)
-2. Implement OllamaService (HTTP client)
-3. Implement response parser (markdown stripping, Zod validation)
-4. Implement ToolRegistry
-5. Create one tool (file_read)
-6. Implement agent loop (runAgent function)
-7. Add `tests/integration/agent-workflow.test.ts` for single-tool and multi-tool loops
+1. Setup project structure and dependencies
+2. Implement LLM service with HTTP client
+3. Implement response parser (markdown stripping, validation)
+4. Implement tool registry
+5. Create first tool (file read)
+6. Implement agent orchestration loop
+7. Add integration tests for single-tool and multi-tool workflows
 
 **Success Criteria:**
 
@@ -747,10 +592,10 @@ async function main() {
 
 **Tasks:**
 
-1. Add file_write tool
+1. Add file write tool
 2. Add command execution tool (run shell commands)
 3. Implement error recovery strategies
-4. Add conversation history management
+4. Enhance conversation history management
 5. Test multi-tool workflows
 
 **Success Criteria:**
@@ -771,7 +616,7 @@ async function main() {
 
 **Tasks:**
 
-1. Add CLI framework (commander or yargs)
+1. Add CLI framework
 2. Implement interactive mode
 3. Add command history
 4. Pretty output formatting
@@ -786,30 +631,33 @@ async function main() {
 
 ## Testing Strategy
 
-This is a learning project so deprioritize testing in favor of learning unless testing provides learning value.
+**Focus Areas:**
 
-### Phase 1 Approach:
+1. **Integration Tests** - Test component interactions
+   - LLM service communication
+   - Conversation management (CRUD, token estimation)
+   - Tool registry (registration, validation, execution)
+   - Parser and validator pipeline
+   - Full agent loop behavior
+   - End-to-end workflows
 
-- Baseline: integration tests via `vitest` for core flows; manual testing for exploration
-- Focus on understanding failure modes
-- Add tests after learning edge cases
+2. **Unit Tests** - Test isolated logic
+   - Parser helpers
+   - Context checking
+   - Context building
+   - Text transformations
 
-### Future Testing:
+3. **Test Infrastructure**
+   - Fixtures: Sample LLM outputs, tool definitions
+   - Mocks: HTTP client, repositories, registries
+   - Graceful degradation when external services unavailable
 
-```
-tests/
-├── agent/
-│   ├── core.test.ts           # Agent loop logic
-│   └── parser.test.ts         # Response parsing
-├── llm/
-│   └── service.test.ts        # Mock HTTP calls
-└── tools/
-    ├── registry.test.ts       # Tool execution
-    └── file-ops.test.ts       # File operations
+**Key Principles:**
 
-integration_tests/
-└── agent-workflow.test.ts     # End-to-end scenarios
-```
+- Integration tests provide learning value for component interactions
+- Mocks enable fast tests without external dependencies
+- Fixtures document real failure modes
+- High coverage without slowing development
 
 ---
 
@@ -839,7 +687,7 @@ integration_tests/
 
 5. **Configuration:**
    - What should be configurable? (model, base URL, max iterations, context limit)
-   - Config file format? (JSON, YAML, TypeScript)
+   - Config file format?
    - Environment variables?
    - **Learning:** Start hardcoded, extract to config as patterns emerge
 
@@ -909,8 +757,8 @@ As you discover failure modes, document them:
 ## Key Takeaways
 
 1. **Keep It Simple**: One way to do things, no optional complexity
-2. **Validate Everything**: Small models make mistakes, Zod catches them
+2. **Validate Everything**: Small models make mistakes, validation catches them
 3. **Explicit Over Implicit**: Clear signals and error messages help models
 4. **Type Safety**: Runtime validation + compile-time types = fewer bugs
-5. **Learn By Doing**: Manual DI and simple patterns reveal how agents work
-6. **Document Surprises**: Future you will thank present you for writing down what broke and why
+5. **Learn By Doing**: Simple patterns reveal how agents work
+6. **Document Surprises**: Write down what broke and why for future reference
