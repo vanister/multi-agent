@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { ask } from './cli/actions.js';
+import { ask, chat } from './cli/actions.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,5 +24,13 @@ program
   .option('-i, --max-iterations <number>', 'Maximum number of agent iterations', parseInt)
   .option('--show-metrics', 'Display agent execution metrics')
   .action(ask);
+
+program
+  .command('chat')
+  .description('Start an interactive chat session with the agent')
+  .option('-m, --model <model>', 'LLM model to use')
+  .option('-i, --max-iterations <number>', 'Maximum number of agent iterations', parseInt)
+  .option('--show-metrics', 'Display agent execution metrics')
+  .action(chat);
 
 program.parse();

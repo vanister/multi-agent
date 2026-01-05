@@ -114,11 +114,11 @@ _Goal: Create the core agent orchestration logic_
 
 _Goal: Create usable interface for real-world testing_
 
-1. **CLI Framework** (`src/cli/`)
-   1. [ ] Setup commander with basic commands
-   2. [ ] Add `chat` command for interactive mode
-   3. [ ] Add `run` command for single queries
-   4. [ ] Implement configuration loading
+1. **CLI Framework** (`src/cli/`) (✅ completed)
+   1. [x] Setup commander with basic commands
+   2. [x] Add `chat` command for interactive mode
+   3. [x] Add `ask` command for single queries
+   4. [x] Implement configuration loading
 
 2. **Interactive Loop** (`src/cli/commands.ts`)
    1. [ ] Create REPL-style interaction

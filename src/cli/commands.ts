@@ -1,47 +1,91 @@
-import { randomUUID } from 'node:crypto';
+import * as readline from 'node:readline';
 import { runAgent } from '../agent/core.js';
-import { buildSystemPrompt } from '../context/prompts.js';
-import { createServices } from './serviceFactory.js';
 import { formatResult, formatError } from './formatters.js';
-import type { AgentConfig } from '../agent/agent-types.js';
-import {
-  MAX_AGENT_ITERATIONS,
-  AGENT_CONTEXT_LIMIT_THRESHOLD,
-  AGENT_MAX_TOKENS
-} from '../config.js';
-import type { AskCommandOptions } from './cli-types.js';
+import { initializeAgentServices } from './commandHelpers.js';
+import type {
+  AskCommandOptions,
+  ChatCommandOptions,
+  Logger,
+  ProcessManager,
+  ReadlineInterface
+} from './cli-types.js';
 
-export async function askAgent(prompt: string, options: AskCommandOptions): Promise<void> {
+export async function askAgent(
+  prompt: string,
+  options: AskCommandOptions,
+  logger: Logger = console,
+  processManager: ProcessManager = process
+): Promise<void> {
   try {
-    const conversationId = randomUUID();
-    const services = createServices({
-      conversationId,
-      model: options.model
+    const { services, systemPrompt, config } = initializeAgentServices({
+      model: options.model,
+      maxIterations: options.maxIterations
     });
-
-    const tools = services.tools.list();
-    const systemPrompt = buildSystemPrompt(tools);
-
-    const config: AgentConfig = {
-      maxIterations: options.maxIterations || MAX_AGENT_ITERATIONS,
-      contextLimitThreshold: AGENT_CONTEXT_LIMIT_THRESHOLD,
-      maxTokens: AGENT_MAX_TOKENS
-    };
 
     const result = await runAgent(prompt, systemPrompt, services, config);
     const formattedResult = formatResult(result, options.showMetrics || false);
 
-    // todo - take in a logger to avoid using console directly
-    console.log(formattedResult);
+    logger.log(formattedResult);
 
     if (!result.success) {
-      process.exit(1);
+      processManager.exit(1);
     }
   } catch (error) {
     const formattedError = formatError(error, options.verbose || false);
 
-    // todo - take in a logger to avoid using console directly
-    console.error(formattedError);
-    process.exit(1);
+    logger.error(formattedError);
+    processManager.exit(1);
+  }
+}
+
+export async function executeInteractiveChat(
+  options: ChatCommandOptions,
+  logger: Logger = console,
+  processManager: ProcessManager = process,
+  readlineInterface?: ReadlineInterface
+): Promise<void> {
+  try {
+    const { conversationId } = initializeAgentServices({
+      model: options.model,
+      maxIterations: options.maxIterations
+    });
+
+    logger.log(`Interactive chat mode (conversation: ${conversationId})`);
+    logger.log('Type /exit to quit\n');
+
+    const rl =
+      readlineInterface ||
+      readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+        prompt: '> '
+      });
+
+    const cleanup = () => {
+      rl.close();
+      logger.log('\nGoodbye!');
+      processManager.exit(0);
+    };
+
+    processManager.on('SIGINT', cleanup);
+
+    rl.on('line', (...args: unknown[]) => {
+      const input = args[0] as string;
+      const trimmed = input.trim();
+
+      if (trimmed === '/exit') {
+        cleanup();
+        return;
+      }
+
+      logger.log('Interactive mode not implemented yet');
+      rl.prompt();
+    });
+
+    rl.prompt();
+  } catch (error) {
+    const formattedError = formatError(error, options.verbose || false);
+    logger.error(formattedError);
+    processManager.exit(1);
   }
 }
