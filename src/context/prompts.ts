@@ -1,8 +1,11 @@
 import type { ToolMetadata } from '../tools/tool-types.js';
 
-export function buildSystemPrompt(tools: ToolMetadata[]): string {
+export function buildSystemPrompt(
+  tools: ToolMetadata[],
+  agentRole: string = 'You are a helpful assistant with access to tools'
+): string {
   return `
-You are a coding assistant with access to tools.
+${agentRole}
 
 RESPONSE FORMAT:
 You must respond with valid JSON only. No markdown, no explanations outside JSON.

@@ -5,7 +5,8 @@ import type { AgentConfig } from '../agent/agent-types.js';
 import {
   MAX_AGENT_ITERATIONS,
   AGENT_CONTEXT_LIMIT_THRESHOLD,
-  AGENT_MAX_TOKENS
+  AGENT_MAX_TOKENS,
+  AGENT_SYSTEM_ROLE
 } from '../config.js';
 import type { InitializeOptions, InitializedServices } from './cli-types.js';
 
@@ -17,7 +18,8 @@ export function initializeAgentServices(options: InitializeOptions): Initialized
   });
 
   const tools = services.tools.list();
-  const systemPrompt = buildSystemPrompt(tools);
+  const agentRole = options.agentRole || AGENT_SYSTEM_ROLE;
+  const systemPrompt = buildSystemPrompt(tools, agentRole);
 
   const config: AgentConfig = {
     maxIterations: options.maxIterations || MAX_AGENT_ITERATIONS,
