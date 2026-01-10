@@ -13,6 +13,7 @@ export type InitializeOptions = {
   conversationId?: string;
   model?: string;
   maxIterations?: number;
+  agentRole?: string;
 };
 
 export type InitializedServices = {

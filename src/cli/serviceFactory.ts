@@ -6,6 +6,7 @@ import { OllamaLlmService } from '../llm/LlmService.js';
 import { fileReadTool } from '../tools/file-ops.js';
 import { calculateTool } from '../tools/calculator.js';
 import type { AgentServices } from '../agent/agent-types.js';
+import type { Tool } from '../tools/tool-types.js';
 import { OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_TIMEOUT_MS } from '../config.js';
 
 export type ServiceFactoryOptions = {
@@ -13,13 +14,15 @@ export type ServiceFactoryOptions = {
   model?: string;
   baseUrl?: string;
   timeoutMs?: number;
+  tools?: Tool[];
 };
 
 export function createServices({
   conversationId,
   model = OLLAMA_MODEL,
   baseUrl = OLLAMA_BASE_URL,
-  timeoutMs = OLLAMA_TIMEOUT_MS
+  timeoutMs = OLLAMA_TIMEOUT_MS,
+  tools
 }: ServiceFactoryOptions): AgentServices {
   const httpClient = new FetchHttpClient();
   const repository = new InMemoryConversationRepository();
@@ -27,9 +30,9 @@ export function createServices({
   const llmService = new OllamaLlmService(httpClient, baseUrl, model, timeoutMs);
   const toolRegistry = new InMemoryToolRegistry();
 
-  // register built-in tools
-  toolRegistry.register(fileReadTool);
-  toolRegistry.register(calculateTool);
+  // Register tools - use provided tools or default built-in tools
+  const toolsToRegister = tools || [fileReadTool, calculateTool];
+  toolsToRegister.forEach((tool) => toolRegistry.register(tool));
 
   return {
     llm: llmService,

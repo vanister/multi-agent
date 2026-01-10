@@ -11,3 +11,6 @@ export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 export const MAX_AGENT_ITERATIONS = 10;
 export const AGENT_CONTEXT_LIMIT_THRESHOLD = 0.8;
 export const AGENT_MAX_TOKENS = 32768;
+
+export const AGENT_SYSTEM_ROLE =
+  process.env.AGENT_SYSTEM_ROLE || 'You are a helpful assistant with access to tools';

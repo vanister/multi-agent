@@ -7,12 +7,21 @@ describe('buildSystemPrompt', () => {
     const tools: ToolMetadata[] = [];
     const result = buildSystemPrompt(tools);
 
-    expect(result).toContain('You are a coding assistant');
+    expect(result).toContain('You are a helpful assistant with access to tools');
     expect(result).toContain('RESPONSE FORMAT:');
     expect(result).toContain('AVAILABLE TOOLS:');
     expect(result).toContain('(No tools available)');
     expect(result).toContain('TOOL RESULTS:');
     expect(result).toContain('IMPORTANT:');
+  });
+
+  it('should generate system prompt with custom agent role', () => {
+    const tools: ToolMetadata[] = [];
+    const customRole = 'You are a research assistant with access to tools';
+    const result = buildSystemPrompt(tools, customRole);
+
+    expect(result).toContain(customRole);
+    expect(result).toContain('RESPONSE FORMAT:');
   });
 
   it('should generate system prompt with single tool', () => {
