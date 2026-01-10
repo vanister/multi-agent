@@ -61,6 +61,7 @@ export async function executeInteractiveChat(
         prompt: '> '
       });
 
+    // todo - move the below to core
     const cleanup = () => {
       rl.close();
       logger.log('\nGoodbye!');
