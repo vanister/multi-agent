@@ -11,14 +11,14 @@ const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 
 const program = new Command();
 
 program
-  .name('coding-agent')
-  .description('AI coding assistant with tool support')
+  .name('agent')
+  .description('AI agent with tool support')
   .version(packageJson.version)
   .option('-v, --verbose', 'Show detailed error output with stack traces');
 
 program
   .command('ask', { isDefault: true })
-  .description('Ask the coding agent a question')
+  .description('Ask the agent a question')
   .argument('<prompt>', 'What you want the agent to do')
   .option('-m, --model <model>', 'LLM model to use')
   .option('-i, --max-iterations <number>', 'Maximum number of agent iterations', parseInt)

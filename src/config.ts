@@ -5,6 +5,12 @@ export const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:
 export const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen2.5-coder:3b';
 export const OLLAMA_TIMEOUT_MS = +(process.env.OLLAMA_TIMEOUT_MS || 30000);
 
+export const AGENT_IDENTITY =
+  process.env.AGENT_IDENTITY || 'You are a helpful AI assistant with access to tools';
+export const AGENT_CAPABILITIES =
+  process.env.AGENT_CAPABILITIES ||
+  'You specialize in coding tasks but can help with general questions';
+
 export const SANDBOX_DIR = path.resolve(process.cwd(), './sandbox');
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 

@@ -388,7 +388,7 @@ describe('runAgent Integration Tests', () => {
       const messages = await services.conversation.getAllMessages();
       expect(messages.length).toBeGreaterThan(0);
       expect(messages[0].role).toBe('system');
-      expect(messages[0].content).toContain('You are a coding assistant');
+      expect(messages[0].content).toContain('You are a helpful AI assistant with access to tools');
     });
 
     it('should reuse existing conversation on subsequent runs', async () => {

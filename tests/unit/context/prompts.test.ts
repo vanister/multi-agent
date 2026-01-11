@@ -7,7 +7,7 @@ describe('buildSystemPrompt', () => {
     const tools: ToolMetadata[] = [];
     const result = buildSystemPrompt(tools);
 
-    expect(result).toContain('You are a coding assistant');
+    expect(result).toContain('You are a helpful AI assistant with access to tools');
     expect(result).toContain('RESPONSE FORMAT:');
     expect(result).toContain('AVAILABLE TOOLS:');
     expect(result).toContain('(No tools available)');

@@ -1,8 +1,9 @@
 import type { ToolMetadata } from '../tools/tool-types.js';
+import { AGENT_IDENTITY, AGENT_CAPABILITIES } from '../config.js';
 
 export function buildSystemPrompt(tools: ToolMetadata[]): string {
   return `
-You are a coding assistant with access to tools.
+${AGENT_IDENTITY}. ${AGENT_CAPABILITIES}.
 
 RESPONSE FORMAT:
 You must respond with valid JSON only. No markdown, no explanations outside JSON.
