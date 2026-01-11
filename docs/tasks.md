@@ -1,4 +1,4 @@
-# Complete Task List for Coding Agent MVP
+# Complete Task List for Multi-Agent MVP
 
 See the [quick-reference](./quick-reference.md) for design decisions.
 
@@ -161,7 +161,7 @@ _Goal: Create usable interface for real-world testing_
 - [ ] Can run from command line
 - [ ] Interactive mode maintains state
 - [ ] Clear output shows what's happening
-- [ ] Actually useful for simple coding tasks
+- [ ] Actually useful for simple tasks
 
 ## Next Steps After MVP
 

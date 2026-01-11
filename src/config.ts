@@ -9,7 +9,7 @@ export const AGENT_IDENTITY =
   process.env.AGENT_IDENTITY || 'You are a helpful AI assistant with access to tools';
 export const AGENT_CAPABILITIES =
   process.env.AGENT_CAPABILITIES ||
-  'You specialize in coding tasks but can help with general questions';
+  'You can help with various tasks including file operations, calculations, and general questions';
 
 export const SANDBOX_DIR = path.resolve(process.cwd(), './sandbox');
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;

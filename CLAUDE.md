@@ -1,8 +1,8 @@
-# Coding Agent MVP - Project Context
+# Multi-Agent MVP - Project Context
 
 ## Overview
 
-**Learning project** building a coding agent MVP to understand:
+**Learning project** building a multi-agent MVP to understand:
 - LLM-based agents, tool calling protocols, failure modes
 - Context management, prompt engineering for small models (qwen2.5-coder:3b)
 - **Current phase:** Phase 2 - Core Services (LLM ✅, Conversation ✅, Tools/Parser/Context pending)

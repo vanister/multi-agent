@@ -12,7 +12,7 @@
 ## Project Structure
 
 ```
-coding-agent/
+multi-agent/
 ├── src/           # Source code
 │   ├── agent/     # Agent orchestration loop, parsing, validation
 │   ├── llm/       # LLM service abstraction and implementations
@@ -500,7 +500,7 @@ const calculatorTool: Tool = {
 
 **System prompt structure:**
 
-1. **Role**: "You are a coding assistant with access to tools"
+1. **Role**: "You are a helpful AI assistant with access to tools"
 
 2. **Response Format Instructions**:
    - Output valid JSON only

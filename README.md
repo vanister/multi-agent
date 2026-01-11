@@ -1,8 +1,11 @@
-# Coding Agent
+# Multi-Agent
 
-AI coding assistant MVP built for learning how small-model agents work, how tool calls fail, and how to
+AI agent MVP built for learning how small-model agents work, how tool calls fail, and how to
 recover gracefully. It currently targets local Ollama models (default: qwen2.5-coder:3b) and focuses
 on a clean tool-calling pipeline rather than breadth of tools.
+
+The agent identity is configurable via `.env` - by default it specializes in coding tasks, but can be
+customized for research, writing, data analysis, or other domains.
 
 ## Status
 - Core services, parser, tool registry, and agent loop complete with integration tests
