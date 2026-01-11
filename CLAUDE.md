@@ -1,8 +1,8 @@
-# Multi-Agent MVP - Project Context
+# RAG-Enabled Agent - Project Context
 
 ## Overview
 
-**Learning project** building a multi-agent MVP to understand:
+**Learning project** building a RAG-enabled agent to understand:
 - LLM-based agents, tool calling protocols, failure modes
 - Context management, prompt engineering for small models (qwen2.5-coder:3b)
 - **Current phase:** Phase 2 - Core Services (LLM ✅, Conversation ✅, Tools/Parser/Context pending)

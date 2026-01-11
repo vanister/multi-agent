@@ -12,7 +12,7 @@
 ## Project Structure
 
 ```
-multi-agent/
+rag-enabled-agent/
 ├── src/           # Source code
 │   ├── agent/     # Agent orchestration loop, parsing, validation
 │   ├── llm/       # LLM service abstraction and implementations

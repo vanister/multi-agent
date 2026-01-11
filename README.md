@@ -1,4 +1,4 @@
-# Multi-Agent
+# RAG-Enabled Agent
 
 AI agent MVP built for learning how small-model agents work, how tool calls fail, and how to
 recover gracefully. It currently targets local Ollama models (default: qwen2.5-coder:3b) and focuses

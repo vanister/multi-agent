@@ -1,4 +1,4 @@
-# Complete Task List for Multi-Agent MVP
+# Complete Task List for RAG-Enabled Agent MVP
 
 See the [quick-reference](./quick-reference.md) for design decisions.
 

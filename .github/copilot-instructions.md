@@ -2,7 +2,7 @@
 
 ## Project Context
 
-This is a **learning project** building a multi-agent MVP to understand:
+This is a **learning project** building a RAG-enabled agent to understand:
 
 - How LLM-based agents work
 - Tool calling protocols and failure modes
