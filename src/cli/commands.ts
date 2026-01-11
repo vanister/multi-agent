@@ -38,6 +38,7 @@ export async function askAgent(
   }
 }
 
+// WIP
 export async function executeInteractiveChat(
   options: ChatCommandOptions,
   logger: Logger = console,

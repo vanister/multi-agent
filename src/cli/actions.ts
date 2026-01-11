@@ -19,6 +19,7 @@ export async function ask(
   await askAgent(prompt, askOptions);
 }
 
+// WIP
 export async function chat(options: Record<string, unknown>, command: Command): Promise<void> {
   const globalOptions = command.parent?.opts() || {};
 
