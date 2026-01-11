@@ -3,6 +3,7 @@
 ## Architecture Rules
 
 - **DI**: Services passed to agent, not instantiated internally
+- **SoC**: Proper separation of concerns for files, modules, and implementation
 - **Types**: `type` for data shapes, `interface` for class contracts (colocated)
 - **Functional Core**: Pure functions for transforms, classes for state
 - **Validation**: Zod for runtime, TypeScript for compile-time
@@ -68,11 +69,11 @@ src/
 
 ## Code Style
 
-- Guard clauses, early returns, no deep nesting
-- No inline returns with `if`
-- Named functions over arrows (unless clearer)
-- 2-space indent, 100 char limit
-- Minimal comments, no public API docs unless non-obvious
+- Guard clauses and early returns over nested conditions
+- Named function declarations over arrows (unless improving clarity)
+- 2-space indent, 100 char line limit
+- Minimal comments only - no public API docs unless behavior is non-obvious
+- Single-purpose functions and modules
 
 ## Key Design Decisions
 
