@@ -25,12 +25,13 @@ program
   .option('--show-metrics', 'Display agent execution metrics')
   .action(ask);
 
-program
-  .command('chat')
-  .description('Start an interactive chat session with the agent')
-  .option('-m, --model <model>', 'LLM model to use')
-  .option('-i, --max-iterations <number>', 'Maximum number of agent iterations', parseInt)
-  .option('--show-metrics', 'Display agent execution metrics')
-  .action(chat);
+// WIP
+// program
+//   .command('chat')
+//   .description('Start an interactive chat session with the agent')
+//   .option('-m, --model <model>', 'LLM model to use')
+//   .option('-i, --max-iterations <number>', 'Maximum number of agent iterations', parseInt)
+//   .option('--show-metrics', 'Display agent execution metrics')
+//   .action(chat);
 
 program.parse();

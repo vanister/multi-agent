@@ -19,10 +19,7 @@ _Goal: Establish project structure and core dependencies_
    4. [x] `tsx` watch mode
 
 3. **Create Type System** (do these when they're needed, not now)
-   1. [-] Define `src/shared/types.d.ts` with Message, LLMResponse
-   2. [-] Define `src/tools/types.d.ts` with Tool, ToolCall, ToolResult
-   3. [-] Define `src/agent/types.d.ts` with AgentServices
-
+   
 4. **Setup Ollama**
    1. [x] Install Ollama via Homebrew
    2. [x] Start Ollama service
@@ -110,58 +107,59 @@ _Goal: Create the core agent orchestration logic_
    3. [x] Test error recovery scenarios
    4. [x] Test context limit behavior
 
-## Phase 4: Interactive CLI Mode
+## Phase 4: Interactive CLI Mode (⚠️ partially complete)
 
 _Goal: Create usable interface for real-world testing_
 
 1. **CLI Framework** (`src/cli/`) (✅ completed)
    1. [x] Setup commander with basic commands
-   2. [x] Add `chat` command for interactive mode
-   3. [x] Add `ask` command for single queries
-   4. [x] Implement configuration loading
+   2. [x] Add `ask` command for single queries (working!)
+   3. [x] Implement configuration loading
+   4. [ ] Add `chat` command for interactive mode (scaffolded, not implemented)
 
-2. **Interactive Loop** (`src/cli/commands.ts`)
+2. **Dependency Injection** (`src/index.ts`) (✅ completed)
+   1. [x] Wire up all services manually
+   2. [x] Initialize with configuration
+   3. [x] Handle startup errors gracefully
+   4. [x] Add debug mode with verbose logging
+
+3. **Output Formatting** (basic implementation complete)
+   1. [x] Basic agent response display
+   2. [x] Error formatting with verbose mode
+   3. [ ] Show tool execution with indicators (future enhancement)
+   4. [ ] Color-code different message types (future enhancement)
+   5. [ ] Add progress indicators for long operations (future enhancement)
+
+4. **Interactive Loop** (`src/cli/commands.ts`) (⏭️ deferred)
    1. [ ] Create REPL-style interaction
    2. [ ] Maintain conversation history across inputs
    3. [ ] Add graceful exit handling (Ctrl+C)
    4. [ ] Display tool calls in real-time
 
-3. **Output Formatting**
-   1. [ ] Pretty-print agent responses
-   2. [ ] Show tool execution with indicators
-   3. [ ] Color-code different message types
-   4. [ ] Add progress indicators for long operations
-
-4. **Dependency Injection** (`src/index.ts`)
-   1. [ ] Wire up all services manually
-   2. [ ] Initialize with configuration
-   3. [ ] Handle startup errors gracefully
-   4. [ ] Add debug mode with verbose logging
-
 ## Validation Checklist for MVP
 
 ### Learning Objectives
 
-- [ ] Understand why tool calls fail
-- [ ] Can debug malformed JSON responses
-- [ ] Know how context limits affect behavior
-- [ ] Recognize prompt engineering importance
-- [ ] See qwen2.5-coder:3b limitations firsthand
+- [x] Understand why tool calls fail
+- [x] Can debug malformed JSON responses
+- [x] Know how context limits affect behavior
+- [x] Recognize prompt engineering importance
+- [x] See qwen2.5-coder:3b limitations firsthand
 
 ### Technical Requirements
 
-- [ ] Agent can read files
-- [ ] ~~Agent can write files~~
-- [ ] Agent handles errors gracefully
-- [ ] Agent completes with explicit signal
-- [ ] Context doesn't overflow
+- [x] Agent can read files
+- [ ] ~~Agent can write files~~ (not in scope for MVP)
+- [x] Agent handles errors gracefully
+- [x] Agent completes with explicit signal
+- [x] Context doesn't overflow
 
 ### Practical Usage
 
-- [ ] Can run from command line
-- [ ] Interactive mode maintains state
-- [ ] Clear output shows what's happening
-- [ ] Actually useful for simple tasks
+- [x] Can run from command line
+- [ ] Interactive mode maintains state (WIP - Phase 4)
+- [ ] Clear output shows what's happening (basic implementation done)
+- [x] Actually useful for simple tasks
 
 ## Next Steps After MVP
 
